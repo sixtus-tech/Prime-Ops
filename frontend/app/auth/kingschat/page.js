@@ -1,10 +1,13 @@
 "use client";
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+
 function KCAuthHandler() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [status, setStatus] = useState("Processing...");
+
   useEffect(() => {
     const token = searchParams.get("token");
     const error = searchParams.get("error");
@@ -14,26 +17,77 @@ function KCAuthHandler() {
     if (!user && searchParams.get("name")) {
       user = { name: decodeURIComponent(searchParams.get("name")), role: searchParams.get("role") || "user" };
     }
+
+    // Detect if this is a redirect flow (mobile) vs popup flow (desktop)
+    var isRedirectFlow = !window.opener;
+
     if (token) {
       setStatus("Fetching profile...");
       fetch(API + "/auth/me", { headers: { Authorization: "Bearer " + token } })
         .then(function(r) { return r.json(); })
         .then(function(data) {
           var fullUser = data.user || user;
-          localStorage.setItem("kc_auth_result", JSON.stringify({ token: token, user: fullUser }));
-          setStatus("Login successful! Closing..."); setTimeout(function() { window.close(); }, 500);
+          var authResult = { token: token, user: fullUser };
+
+          if (isRedirectFlow) {
+            // Mobile redirect flow — save auth directly and navigate
+            localStorage.setItem("token", token);
+            localStorage.setItem("user", JSON.stringify(fullUser));
+            setStatus("Login successful! Redirecting...");
+            var returnPath = localStorage.getItem("kc_login_return") || "/";
+            localStorage.removeItem("kc_login_return");
+            // Redirect based on role
+            var dest = fullUser.role === "director" ? "/dashboard" : "/portal";
+            if (returnPath && returnPath !== "/" && returnPath !== "/admin/login" && returnPath !== "/portal/login") {
+              dest = returnPath;
+            }
+            setTimeout(function() { router.push(dest); }, 300);
+          } else {
+            // Popup flow — signal parent window
+            localStorage.setItem("kc_auth_result", JSON.stringify(authResult));
+            setStatus("Login successful! Closing...");
+            setTimeout(function() { window.close(); }, 500);
+          }
         })
         .catch(function() {
-          localStorage.setItem("kc_auth_result", JSON.stringify({ token: token, user: user }));
-          setStatus("Login successful! Closing..."); setTimeout(function() { window.close(); }, 500);
+          var authResult = { token: token, user: user };
+          if (isRedirectFlow) {
+            localStorage.setItem("token", token);
+            localStorage.setItem("user", JSON.stringify(user));
+            setStatus("Login successful! Redirecting...");
+            setTimeout(function() { router.push(user?.role === "director" ? "/dashboard" : "/portal"); }, 300);
+          } else {
+            localStorage.setItem("kc_auth_result", JSON.stringify(authResult));
+            setStatus("Login successful! Closing...");
+            setTimeout(function() { window.close(); }, 500);
+          }
         });
     } else {
-      localStorage.setItem("kc_auth_result", JSON.stringify({ error: error || "Login failed" }));
-      setStatus("Login failed. You can close this window.");
+      var errResult = { error: error || "Login failed" };
+      if (isRedirectFlow) {
+        setStatus("Login failed. Redirecting...");
+        setTimeout(function() { router.push("/"); }, 1500);
+      } else {
+        localStorage.setItem("kc_auth_result", JSON.stringify(errResult));
+        setStatus("Login failed. You can close this window.");
+      }
     }
-  }, [searchParams]);
-  return (<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"><div className="text-center"><div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-600/20 mb-4"><svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></div><p className="text-white text-lg font-medium">{status}</p></div></div>);
+  }, [searchParams, router]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="text-center">
+        <div className="w-10 h-10 border-3 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-white text-lg font-medium">{status}</p>
+      </div>
+    </div>
+  );
 }
+
 export default function KCAuthPage() {
-  return (<Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-900"><p className="text-white">Loading...</p></div>}><KCAuthHandler /></Suspense>);
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-900"><p className="text-white">Loading...</p></div>}>
+      <KCAuthHandler />
+    </Suspense>
+  );
 }

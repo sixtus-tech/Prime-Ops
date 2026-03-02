@@ -44,6 +44,21 @@ export function AuthProvider({ children }) {
     var configRes = await fetch(API + "/auth/kingschat/config");
     var config = await configRes.json();
     var kcUrl = "https://accounts.kingsch.at/?client_id=" + encodeURIComponent(config.clientId) + "&scopes=" + encodeURIComponent(JSON.stringify(config.scopes || ["profile"])) + "&post_redirect=true&redirect_uri=" + encodeURIComponent(config.redirectUri);
+
+    // Mobile detection — use full redirect instead of popup
+    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+    if (isMobile) {
+      // Save where to return after login
+      localStorage.setItem("kc_login_return", window.location.pathname);
+      localStorage.removeItem("kc_auth_result");
+      // Full page redirect — no popup needed
+      window.location.href = kcUrl;
+      // Return a promise that never resolves (page is navigating away)
+      return new Promise(function() {});
+    }
+
+    // Desktop — use popup as before
     localStorage.removeItem("kc_auth_result");
     var w = Math.min(Math.floor(window.outerWidth * 0.8), 900);
     var h = Math.min(Math.floor(window.outerHeight * 0.8), 600);
