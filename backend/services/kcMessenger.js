@@ -147,7 +147,7 @@ async function getValidToken(user) {
  * @param {string} message - Message to send
  * @returns {Promise<boolean>}
  */
-async function sendKcNotification(userId, message) {
+async function sendKcNotification(userId, message, senderUserId) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -167,7 +167,7 @@ async function sendKcNotification(userId, message) {
 
     // We need a sender's token — use any director's token or a service token
     // For now, we use the system approach: find any user with a valid token to send from
-    const sender = await getSystemSender();
+    const sender = await getSystemSender(senderUserId);
     if (!sender) {
       console.warn("[KC Messenger] No sender with valid KC token available");
       return false;
@@ -215,11 +215,11 @@ async function sendKcNotification(userId, message) {
  * @param {string} message - Message to send
  * @returns {Promise<boolean>}
  */
-async function sendKcMessageToKcId(recipientKcId, message) {
+async function sendKcMessageToKcId(recipientKcId, message, senderUserId) {
   try {
     if (!recipientKcId) return false;
 
-    const sender = await getSystemSender();
+    const sender = await getSystemSender(senderUserId);
     if (!sender) {
       console.warn("[KC Messenger] No sender with valid KC token available for direct kcId message");
       return false;
@@ -260,7 +260,14 @@ async function sendKcMessageToKcId(recipientKcId, message) {
  * Find the best "system sender" — a director or the first user with valid KC tokens.
  * The app sends notifications as this user's KC account.
  */
-async function getSystemSender() {
+async function getSystemSender(preferredUserId) {
+  if (preferredUserId) {
+    const preferred = await prisma.user.findFirst({
+      where: { id: preferredUserId, kcAccessToken: { not: null }, kcId: { not: null } },
+      select: { id: true, kcId: true, kcAccessToken: true, kcRefreshToken: true, kcTokenExpiresAt: true },
+    });
+    if (preferred) return preferred;
+  }
   // Prefer directors first
   let sender = await prisma.user.findFirst({
     where: {
@@ -301,14 +308,14 @@ async function getSystemSender() {
  * @param {string} message
  * @param {string} [excludeUserId] - optional user to exclude
  */
-async function sendKcToCommittee(committeeId, message, excludeUserId) {
+async function sendKcToCommittee(committeeId, message, excludeUserId, senderUserId) {
   try {
     const members = await prisma.member.findMany({
       where: { committeeId },
       select: { userId: true, kcId: true },
     });
 
-    const sender = await getSystemSender();
+    const sender = await getSystemSender(senderUserId);
     if (!sender) {
       console.warn("[KC Messenger] No sender for committee broadcast");
       return;
@@ -348,7 +355,7 @@ async function sendKcToCommittee(committeeId, message, excludeUserId) {
  * Send KC messages to all directors.
  * @param {string} message
  */
-async function sendKcToDirectors(message) {
+async function sendKcToDirectors(message, senderUserId) {
   try {
     const directors = await prisma.user.findMany({
       where: { role: "director", kcId: { not: null } },

@@ -10,7 +10,7 @@ function cleanForKc(text) {
  * Send a notification to a user (in-app + KingsChat).
  * @param {{ userId: string, type: string, title: string, message: string, link?: string, metadata?: object }}
  */
-async function notify({ userId, type, title, message, link, metadata }) {
+async function notify({ userId, type, title, message, link, metadata, senderUserId }) {
   try {
     // 1. In-app notification
     await prisma.notification.create({
@@ -26,7 +26,7 @@ async function notify({ userId, type, title, message, link, metadata }) {
 
     // 2. KingsChat message (fire-and-forget)
     const kcMsg = `📋 Prime Ops\n\n${cleanForKc(title)}\n${cleanForKc(message)}`;
-    sendKcNotification(userId, kcMsg).catch(() => {});
+    sendKcNotification(userId, kcMsg, senderUserId).catch(() => {});
   } catch (err) {
     console.error("Failed to create notification:", err);
   }
@@ -37,7 +37,7 @@ async function notify({ userId, type, title, message, link, metadata }) {
  * In-app notifications go to members with userId.
  * KingsChat messages go to ALL members with kcId (via sendKcToCommittee).
  */
-async function notifyCommitteeMembers({ committeeId, type, title, message, link, metadata, excludeUserId }) {
+async function notifyCommitteeMembers({ committeeId, type, title, message, link, metadata, excludeUserId, senderUserId }) {
   try {
     const members = await prisma.member.findMany({
       where: { committeeId },
@@ -64,7 +64,7 @@ async function notifyCommitteeMembers({ committeeId, type, title, message, link,
 
     // KingsChat messages — reaches members with kcId even without User accounts
     const kcMsg = `📋 Prime Ops\n\n${cleanForKc(title)}\n${cleanForKc(message)}`;
-    sendKcToCommittee(committeeId, kcMsg, excludeUserId).catch(() => {});
+    sendKcToCommittee(committeeId, kcMsg, excludeUserId, senderUserId).catch(() => {});
 
     // Also send KC messages to members who have kcId on the Member record
     // but NO linked userId (these are KC-only members not yet registered).
@@ -77,7 +77,7 @@ async function notifyCommitteeMembers({ committeeId, type, title, message, link,
 /**
  * Notify all directors.
  */
-async function notifyDirectors({ type, title, message, link, metadata }) {
+async function notifyDirectors({ type, title, message, link, metadata, senderUserId }) {
   try {
     const directors = await prisma.user.findMany({
       where: { role: "director" },

@@ -409,6 +409,7 @@ router.post("/:id/broadcast", requireAuth, async (req, res) => {
             message,
             link: "/portal",
             metadata: { eventId: event.id, urgency: urgency || "normal" },
+            senderUserId: req.user?.id,
           });
           notifCount++;
         }
