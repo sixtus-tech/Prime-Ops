@@ -49,7 +49,7 @@ export default function NewEventPage() {
           </svg>
           Back
         </button>
-        <h1 className="font-display text-3xl">Create New Event</h1>
+        <h1 className="font-display text-3xl">Create New Project</h1>
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-8">
@@ -57,7 +57,7 @@ export default function NewEventPage() {
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-surface-700 mb-1.5">
-              Event Title <span className="text-red-400">*</span>
+              Project Title <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -81,9 +81,9 @@ export default function NewEventPage() {
             />
           </div>
 
-          {/* Event Type */}
+          {/* Project Type */}
           <div>
-            <label className="block text-sm font-medium text-surface-700 mb-1.5">Event Type</label>
+            <label className="block text-sm font-medium text-surface-700 mb-1.5">Project Type</label>
             <div className="flex gap-2">
               {[
                 { value: "church", label: "⛪ Church" },
@@ -202,7 +202,7 @@ export default function NewEventPage() {
               disabled={saving || !form.title.trim()}
               className="flex-1 bg-brand-500 hover:bg-brand-600 disabled:bg-surface-300 text-white font-medium px-6 py-3 rounded-xl transition-all shadow-md"
             >
-              {saving ? "Creating..." : "Create Event"}
+              {saving ? "Creating..." : "Create Project"}
             </button>
           </div>
         </form>

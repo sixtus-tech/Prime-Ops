@@ -80,7 +80,7 @@ export default function ProposalEditor({ proposal, onSave, onCancel }) {
         <h3 className={sectionTitle}>📋 Basic Information</h3>
         <div className="space-y-3">
           <div>
-            <label className={labelClass}>Event Title</label>
+            <label className={labelClass}>Project Title</label>
             <input className={inputClass} value={data.title || ""} onChange={(e) => set("title", e.target.value)} />
           </div>
           <div>

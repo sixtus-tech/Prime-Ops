@@ -153,7 +153,7 @@ export default function ProposalOutput({ proposal, proposalId, transcript, onRes
               <line x1="12" x2="12" y1="14" y2="18"/>
               <line x1="10" x2="14" y1="16" y2="16"/>
             </svg>
-            {creating ? "Creating..." : "Create Event"}
+            {creating ? "Creating..." : "Create Project"}
           </button>
         </div>
       </div>
