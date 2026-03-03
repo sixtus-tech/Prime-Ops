@@ -390,28 +390,20 @@ router.post("/:id/members", requireAuth, async (req, res) => {
     const memberKcId = kcId || member.kcId;
     console.log("[Events Add Member] memberKcId:", memberKcId, "| kcId from body:", kcId, "| member.kcId:", member.kcId);
       const kcMessage = [
-        `📋 Prime Ops — Appointment as ${roleLabel} of the ${committee.name} for ${committee.event?.title || "a project"}`,
-        ``,
+        `📋 Prime Ops — *Appointment as ${roleLabel} of the ${committee.name}*`,
         `Dear Esteemed ${name.trim()},`,
-        ``,
-        `Warm greetings in Jesus' name.`,
-        `This is to kindly inform you that you have been appointed as ${roleLabel} of the ${committee.name}. Congratulations!`,
-        ``,
+        `Warm greetings in Jesus name.`,
+        `This is to kindly inform you that you have been appointed as ${roleLabel} of the ${committee.name} for "${committee.event?.title || "a project"}". Congratulations!`,
         `Kindly proceed to:`,
         `🔗 Access your Committee Portal:`,
         `${portalLink}`,
-        ``,
         `📄 Download your Appointment Letter:`,
         `${backendUrl}${getLetterDownloadPath(`appointment-${member.id}.pdf`)}`,
-        ``,
         `Also, kindly log in to view your responsibilities, tasks, and collaborate with your team.`,
-        ``,
         `Thank you and congratulations once again`,
-        ``,
         `Office of the CEO`,
       ].join("\n");
     if (memberKcId) {
-      const kcMessage = `You have been appointed as ${roleLabel} for the ${committee.name} committee in "${committee.event?.title}". Visit your portal to view details: ${portalLink}`;
 
 
 
