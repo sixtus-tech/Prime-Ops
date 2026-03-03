@@ -18,6 +18,7 @@ const uploadRoutes = require("./routes/uploads");
 const realtimeRoutes = require("./routes/realtime");
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 4000;
 
 // ---------------------------------------------------------------------------
