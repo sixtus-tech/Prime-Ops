@@ -1,3 +1,4 @@
+const { requireAuth } = require("../middleware/auth");
 const express = require("express");
 const prisma = require("../services/db");
 const { logActivity } = require("../services/activity");
@@ -14,7 +15,7 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
 // ---------------------------------------------------------------------------
 // GET /api/approvals — list all approval requests (with filters)
 // ---------------------------------------------------------------------------
-router.get("/", async (req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   try {
     const { status, priority, eventId, sort = "createdAt", order = "desc" } = req.query;
 
@@ -22,6 +23,7 @@ router.get("/", async (req, res) => {
     if (status) where.status = status;
     if (priority) where.priority = priority;
     if (eventId) where.eventId = eventId;
+    if (req.user?.id) where.event = { createdById: req.user.id };
 
     const approvals = await prisma.approvalRequest.findMany({
       where,
@@ -46,7 +48,7 @@ router.get("/", async (req, res) => {
 // ---------------------------------------------------------------------------
 // GET /api/approvals/stats — counts by status for dashboard
 // ---------------------------------------------------------------------------
-router.get("/stats", async (req, res) => {
+router.get("/stats", requireAuth, async (req, res) => {
   try {
     const [pending, underReview, approved, rejected, revisionRequested] =
       await Promise.all([
@@ -70,7 +72,7 @@ router.get("/stats", async (req, res) => {
 // ---------------------------------------------------------------------------
 // GET /api/approvals/:id — get single approval with full action history
 // ---------------------------------------------------------------------------
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireAuth, async (req, res) => {
   try {
     const approval = await prisma.approvalRequest.findUnique({
       where: { id: req.params.id },
@@ -111,7 +113,7 @@ router.get("/:id", async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/approvals — create / submit a new approval request
 // ---------------------------------------------------------------------------
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     const { eventId, title, description, requestedBy, priority, dueDate } = req.body;
 
@@ -165,7 +167,7 @@ router.post("/", async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/approvals/:id/action — perform an action (approve, reject, etc.)
 // ---------------------------------------------------------------------------
-router.post("/:id/action", async (req, res) => {
+router.post("/:id/action", requireAuth, async (req, res) => {
   try {
     const { action, performedBy, comment } = req.body;
 
@@ -369,7 +371,7 @@ router.post("/:id/action", async (req, res) => {
 // ---------------------------------------------------------------------------
 // DELETE /api/approvals/:id — delete approval request
 // ---------------------------------------------------------------------------
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res) => {
   try {
     await prisma.approvalRequest.delete({ where: { id: req.params.id } });
     res.json({ deleted: true });

@@ -135,6 +135,7 @@ router.get("/", async (req, res) => {
     const where = {};
     if (committeeId) where.committeeId = committeeId;
     if (eventId) where.eventId = eventId;
+    if (req.user?.id) where.committee = { event: { createdById: req.user.id } };
 
     const updates = await prisma.statusUpdate.findMany({
       where,
