@@ -1,3 +1,4 @@
+const { requireAuth } = require("../middleware/auth");
 const express = require("express");
 const prisma = require("../services/db");
 const { logActivity } = require("../services/activity");
@@ -8,11 +9,12 @@ const router = express.Router();
 // ---------------------------------------------------------------------------
 // GET /api/events — list all events (with optional filters)
 // ---------------------------------------------------------------------------
-router.get("/", async (req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   try {
     const { status, eventType, search, sort = "updatedAt", order = "desc" } = req.query;
 
     const where = {};
+    if (req.user?.id) where.createdById = req.user.id;
     if (status) where.status = status;
     if (eventType) where.eventType = eventType;
     if (search) {
@@ -41,7 +43,7 @@ router.get("/", async (req, res) => {
 // ---------------------------------------------------------------------------
 // GET /api/events/:id — get single event with all related data
 // ---------------------------------------------------------------------------
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireAuth, async (req, res) => {
   try {
     const event = await prisma.event.findUnique({
       where: { id: req.params.id },
@@ -71,7 +73,7 @@ router.get("/:id", async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/events — create new event
 // ---------------------------------------------------------------------------
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     const {
       title,
@@ -102,6 +104,7 @@ router.post("/", async (req, res) => {
         estimatedAttendance: estimatedAttendance || null,
         estimatedBudget: estimatedBudget || null,
         status: status || "draft",
+        createdById: req.user?.id || null,
       },
       include: {
         committees: true,
@@ -125,7 +128,7 @@ router.post("/", async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/events/from-proposal — create event + committees from proposal JSON
 // ---------------------------------------------------------------------------
-router.post("/from-proposal", async (req, res) => {
+router.post("/from-proposal", requireAuth, async (req, res) => {
   try {
     const { proposalId, proposal } = req.body;
 
@@ -145,6 +148,7 @@ router.post("/from-proposal", async (req, res) => {
         estimatedAttendance: p.targetAudience?.estimatedAttendance || null,
         estimatedBudget: p.budget?.estimatedTotal || null,
         status: "draft",
+        createdById: req.user?.id || null,
         committees: p.committees?.length
           ? {
               create: p.committees.map((c) => ({
@@ -184,7 +188,7 @@ router.post("/from-proposal", async (req, res) => {
 // ---------------------------------------------------------------------------
 // PUT /api/events/:id — update event
 // ---------------------------------------------------------------------------
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAuth, async (req, res) => {
   try {
     const {
       title,
@@ -245,7 +249,7 @@ router.put("/:id", async (req, res) => {
 // ---------------------------------------------------------------------------
 // DELETE /api/events/:id — delete event and cascade
 // ---------------------------------------------------------------------------
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res) => {
   try {
     await prisma.event.delete({ where: { id: req.params.id } });
     res.json({ deleted: true });
@@ -261,7 +265,7 @@ router.delete("/:id", async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/events/:id/set-deadlines — bulk set deadlines for all committees
 // ---------------------------------------------------------------------------
-router.post("/:id/set-deadlines", async (req, res) => {
+router.post("/:id/set-deadlines", requireAuth, async (req, res) => {
   try {
     const { deadlines } = req.body;
     if (!deadlines || !Array.isArray(deadlines)) {
@@ -355,7 +359,7 @@ router.post("/:id/set-deadlines", async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/events/:id/broadcast — director sends alert to all committee heads
 // ---------------------------------------------------------------------------
-router.post("/:id/broadcast", async (req, res) => {
+router.post("/:id/broadcast", requireAuth, async (req, res) => {
   try {
     const { subject, message, urgency } = req.body;
 
