@@ -19,7 +19,7 @@ function KCAuthHandler() {
     }
 
     // Detect if this is a redirect flow (mobile) vs popup flow (desktop)
-    var isRedirectFlow = !window.opener;
+    var isRedirectFlow = localStorage.getItem("kc_flow") !== "popup";
 
     if (token) {
       setStatus("Fetching profile...");
