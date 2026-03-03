@@ -41,7 +41,7 @@ function KCAuthHandler() {
             if (returnPath && returnPath !== "/" && returnPath !== "/admin/login" && returnPath !== "/portal/login") {
               dest = returnPath;
             }
-            setTimeout(function() { router.push(dest); }, 300);
+            setTimeout(function() { window.location.href = dest; }, 300);
           } else {
             // Popup flow — signal parent window
             localStorage.setItem("kc_auth_result", JSON.stringify(authResult));
@@ -55,7 +55,7 @@ function KCAuthHandler() {
             localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify(user));
             setStatus("Login successful! Redirecting...");
-            setTimeout(function() { router.push(user?.role === "director" ? "/dashboard" : "/portal"); }, 300);
+            setTimeout(function() { window.location.href = user?.role === "director" ? "/dashboard" : "/portal"; }, 300);
           } else {
             localStorage.setItem("kc_auth_result", JSON.stringify(authResult));
             setStatus("Login successful! Closing...");
@@ -66,7 +66,7 @@ function KCAuthHandler() {
       var errResult = { error: error || "Login failed" };
       if (isRedirectFlow) {
         setStatus("Login failed. Redirecting...");
-        setTimeout(function() { router.push("/"); }, 1500);
+        setTimeout(function() { window.location.href = "/"; }, 1500);
       } else {
         localStorage.setItem("kc_auth_result", JSON.stringify(errResult));
         setStatus("Login failed. You can close this window.");
