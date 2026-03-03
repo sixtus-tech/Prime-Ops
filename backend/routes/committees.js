@@ -85,7 +85,7 @@ router.post("/", requireAuth, async (req, res) => {
       data: {
         name: name.trim(),
         description: description?.trim() || null,
-        suggestedSize: suggestedSize || null,
+        
         proposalDeadline: proposalDeadline ? new Date(proposalDeadline) : null,
         eventId,
         responsibilities: responsibilities?.length
