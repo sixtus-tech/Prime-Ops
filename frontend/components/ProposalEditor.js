@@ -88,7 +88,7 @@ export default function ProposalEditor({ proposal, onSave, onCancel }) {
             <input className={inputClass} value={data.subtitle || ""} onChange={(e) => set("subtitle", e.target.value)} />
           </div>
           <div>
-            <label className={labelClass}>Event Type</label>
+            <label className={labelClass}>Project Type</label>
             <select className={inputClass} value={data.eventType || "general"} onChange={(e) => set("eventType", e.target.value)}>
               <option value="church">Church</option>
               <option value="corporate">Corporate</option>

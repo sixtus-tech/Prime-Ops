@@ -61,10 +61,10 @@ export default function InputSection({ onTextGenerate, onVoiceGenerate, onChatPr
 
   return (
     <section className="mt-10 animate-fade-in">
-      {/* Event type selector */}
+      {/* Project type selector */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-surface-700 mb-2">
-          Event type
+          Project type
         </label>
         <div className="flex gap-2">
           {[
@@ -112,7 +112,7 @@ export default function InputSection({ onTextGenerate, onVoiceGenerate, onChatPr
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your event idea... e.g. 'I want to organize a 3-day youth conference for ages 16-25 with worship sessions, breakout workshops on leadership, and a closing gala dinner.'"
+                placeholder="Describe your project idea... e.g. 'I want to organize a 3-day youth conference for ages 16-25 with worship sessions, breakout workshops on leadership, and a closing gala dinner.'"
                 rows={6}
                 className="w-full rounded-xl border border-surface-200 px-4 py-3 text-surface-900 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 resize-none text-[15px] leading-relaxed"
               />
