@@ -357,41 +357,56 @@ router.post("/:id/set-deadlines", requireAuth, async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /api/events/:id/broadcast — director sends alert to all committee heads
-// ---------------------------------------------------------------------------
+// POST /api/events/:id/broadcast — send or schedule alert
 router.post("/:id/broadcast", requireAuth, async (req, res) => {
   try {
-    const { subject, message, urgency } = req.body;
-
-    if (!message) {
-      return res.status(400).json({ error: "Message is required." });
-    }
+    const { subject, message, urgency, committeeIds, scheduledFor } = req.body;
+    if (!message) return res.status(400).json({ error: "Message is required." });
 
     const event = await prisma.event.findUnique({
       where: { id: req.params.id },
       include: {
         committees: {
-          include: {
-            members: { where: { userId: { not: null } }, select: { userId: true } },
-          },
+          include: { members: { where: { userId: { not: null } }, select: { userId: true } } },
         },
       },
     });
     if (!event) return res.status(404).json({ error: "Event not found." });
 
+    // Schedule for later
+    if (scheduledFor && new Date(scheduledFor) > new Date()) {
+      const scheduled = await prisma.scheduledBroadcast.create({
+        data: {
+          eventId: event.id,
+          subject: subject || null,
+          message,
+          urgency: urgency || "normal",
+          committeeIds: committeeIds?.length ? committeeIds : null,
+          scheduledFor: new Date(scheduledFor),
+          createdBy: req.user?.name || "Director",
+        },
+      });
+      return res.json({ scheduled: true, id: scheduled.id, scheduledFor: scheduled.scheduledFor, message: "Alert scheduled for " + new Date(scheduledFor).toLocaleString() });
+    }
+
+    // Send immediately — filter committees if specified
+    const targetCommittees = committeeIds?.length
+      ? event.committees.filter((c) => committeeIds.includes(c.id))
+      : event.committees;
+
+    const { notify } = require("../services/notifications");
     const notifiedIds = new Set();
     let notifCount = 0;
 
-    for (const committee of event.committees) {
+    for (const committee of targetCommittees) {
       for (const member of committee.members) {
         if (member.userId && !notifiedIds.has(member.userId)) {
           notifiedIds.add(member.userId);
-          const { notify } = require("../services/notifications");
           await notify({
             userId: member.userId,
             type: "director_broadcast",
             title: subject || "Alert from Program Director",
-            message: `${message}`,
+            message,
             link: "/portal",
             metadata: { eventId: event.id, urgency: urgency || "normal" },
           });
@@ -400,17 +415,41 @@ router.post("/:id/broadcast", requireAuth, async (req, res) => {
       }
     }
 
+    const committeeNames = targetCommittees.map((c) => c.name).join(", ");
     logActivity({
       action: "director_broadcast",
-      description: `Director broadcast: "${subject || message.substring(0, 50)}..." sent to ${notifCount} committee members`,
+      description: "Broadcast to " + committeeNames + ": " + (subject || message.substring(0, 50)) + "... sent to " + notifCount + " members",
       eventId: event.id,
-      performedBy: "Director",
+      performedBy: req.user?.name || "Director",
     }).catch(() => {});
 
-    res.json({ sent: notifCount, message: `Alert sent to ${notifCount} committee members.` });
+    res.json({ sent: notifCount, message: "Alert sent to " + notifCount + " members across " + targetCommittees.length + " committee(s)." });
   } catch (err) {
     console.error("Broadcast error:", err);
     res.status(500).json({ error: "Failed to send broadcast." });
+  }
+});
+
+// GET /api/events/:id/scheduled-broadcasts
+router.get("/:id/scheduled-broadcasts", requireAuth, async (req, res) => {
+  try {
+    const broadcasts = await prisma.scheduledBroadcast.findMany({
+      where: { eventId: req.params.id },
+      orderBy: { scheduledFor: "asc" },
+    });
+    res.json({ broadcasts });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch scheduled broadcasts." });
+  }
+});
+
+// DELETE /api/events/:id/scheduled-broadcasts/:broadcastId
+router.delete("/:id/scheduled-broadcasts/:broadcastId", requireAuth, async (req, res) => {
+  try {
+    await prisma.scheduledBroadcast.delete({ where: { id: req.params.broadcastId } });
+    res.json({ deleted: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete scheduled broadcast." });
   }
 });
 

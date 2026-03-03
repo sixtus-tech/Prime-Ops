@@ -592,7 +592,7 @@ export default function EventDetailPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-xl text-surface-900">Communications</h2>
           </div>
-          <BroadcastAlert eventId={event.id} eventTitle={event.title} />
+          <BroadcastAlert eventId={event.id} eventTitle={event.title} committees={event.committees || []} />
         </section>
 
         {/* ─── Committee Status Updates ─── */}

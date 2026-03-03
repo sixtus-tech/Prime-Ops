@@ -81,6 +81,8 @@ const { startDeadlineReminders } = require("./services/deadlineReminders");
 // Start
 // ---------------------------------------------------------------------------
 app.listen(PORT, () => {
+const { startBroadcastScheduler } = require("./services/broadcastScheduler");
+startBroadcastScheduler();
   console.log(`\n🚀 Prime Ops API running on http://localhost:${PORT}`);
   console.log(`   Health check: http://localhost:${PORT}/api/health\n`);
 

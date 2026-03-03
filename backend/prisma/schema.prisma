@@ -60,6 +60,7 @@ model Event {
 
   createdBy        User?             @relation("EventCreator", fields: [createdById], references: [id])
   committees       Committee[]
+  scheduledBroadcasts ScheduledBroadcast[]
   proposals        Proposal[]
   milestones       Milestone[]
   activities       Activity[]
@@ -377,4 +378,21 @@ model FileUpload {
 
   @@index([committeeId])
   @@index([programId])
+}
+
+model ScheduledBroadcast {
+  id            String   @id @default(uuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  subject       String?
+  message       String
+  urgency       String   @default("normal")
+  committeeIds  Json?
+  scheduledFor  DateTime
+  sent          Boolean  @default(false)
+  sentAt        DateTime?
+  createdBy     String?
+  createdAt     DateTime @default(now())
+
+  @@index([scheduledFor, sent])
 }
