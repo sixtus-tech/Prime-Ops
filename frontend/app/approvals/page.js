@@ -225,7 +225,7 @@ export default function ApprovalsPage() {
         <div>
           <h1 className="font-display text-3xl lg:text-4xl">Approvals</h1>
           <p className="mt-2 text-white/70">
-            Submit, review, and track approval requests for your events.
+            Submit, review, and track approval requests for your projects.
           </p>
         </div>
         <CreateApprovalForm events={events} onCreated={handleCreated} />
