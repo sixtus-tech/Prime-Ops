@@ -1,3 +1,4 @@
+const { requireAuth } = require("../middleware/auth");
 const express = require("express");
 const path = require("path");
 const prisma = require("../services/db");
@@ -17,10 +18,11 @@ router.use("/appointment-letters", express.static(LETTERS_DIR));
 // ---------------------------------------------------------------------------
 // GET /api/committees — list all committees (optionally filter by event)
 // ---------------------------------------------------------------------------
-router.get("/", async (req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   try {
     const { eventId } = req.query;
     const where = eventId ? { eventId } : {};
+    if (req.user?.id) where.event = { createdById: req.user.id };
 
     const committees = await prisma.committee.findMany({
       where,
@@ -42,7 +44,7 @@ router.get("/", async (req, res) => {
 // ---------------------------------------------------------------------------
 // GET /api/committees/:id — get single committee with all details
 // ---------------------------------------------------------------------------
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireAuth, async (req, res) => {
   try {
     const committee = await prisma.committee.findUnique({
       where: { id: req.params.id },
@@ -65,7 +67,7 @@ router.get("/:id", async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/committees — create committee for an event
 // ---------------------------------------------------------------------------
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     const { name, description, suggestedSize, eventId, responsibilities, proposalDeadline } = req.body;
 
@@ -103,7 +105,7 @@ router.post("/", async (req, res) => {
 // ---------------------------------------------------------------------------
 // PUT /api/committees/:id — update committee
 // ---------------------------------------------------------------------------
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAuth, async (req, res) => {
   try {
     const { name, description, suggestedSize, responsibilities, proposalDeadline } = req.body;
 
@@ -146,7 +148,7 @@ router.put("/:id", async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/committees/:id/set-deadline — set proposal deadline + create tasks + notify
 // ---------------------------------------------------------------------------
-router.post("/:id/set-deadline", async (req, res) => {
+router.post("/:id/set-deadline", requireAuth, async (req, res) => {
   try {
     const { proposalDeadline } = req.body;
 
@@ -235,7 +237,7 @@ router.post("/:id/set-deadline", async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/committees/:id/send-reminder — director manually sends a reminder
 // ---------------------------------------------------------------------------
-router.post("/:id/send-reminder", async (req, res) => {
+router.post("/:id/send-reminder", requireAuth, async (req, res) => {
   try {
     const committee = await prisma.committee.findUnique({
       where: { id: req.params.id },
@@ -266,7 +268,7 @@ router.post("/:id/send-reminder", async (req, res) => {
 // ---------------------------------------------------------------------------
 // DELETE /api/committees/:id — delete committee
 // ---------------------------------------------------------------------------
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res) => {
   try {
     await prisma.committee.delete({ where: { id: req.params.id } });
     res.json({ deleted: true });
@@ -289,7 +291,7 @@ router.delete("/:id", async (req, res) => {
 //   ✓ Generates appointment letter PDF
 //   ✓ Sends KingsChat notification with portal login link
 // ---------------------------------------------------------------------------
-router.post("/:id/members", async (req, res) => {
+router.post("/:id/members", requireAuth, async (req, res) => {
   try {
     const { name, email, phone, role, kcUsername, kcId } = req.body;
 
@@ -457,7 +459,7 @@ router.post("/:id/members", async (req, res) => {
 // GET /api/committees/:committeeId/members/:memberId/appointment-letter
 // Download the appointment letter for a specific member
 // ---------------------------------------------------------------------------
-router.get("/:committeeId/members/:memberId/appointment-letter", async (req, res) => {
+router.get("/:committeeId/members/:memberId/appointment-letter", requireAuth, async (req, res) => {
   try {
     const member = await prisma.member.findUnique({
       where: { id: req.params.memberId },
@@ -487,7 +489,7 @@ router.get("/:committeeId/members/:memberId/appointment-letter", async (req, res
 // ---------------------------------------------------------------------------
 // PUT /api/committees/:committeeId/members/:memberId — update member
 // ---------------------------------------------------------------------------
-router.put("/:committeeId/members/:memberId", async (req, res) => {
+router.put("/:committeeId/members/:memberId", requireAuth, async (req, res) => {
   try {
     const { name, email, phone, role, kcUsername, kcId } = req.body;
 
@@ -516,7 +518,7 @@ router.put("/:committeeId/members/:memberId", async (req, res) => {
 // ---------------------------------------------------------------------------
 // DELETE /api/committees/:committeeId/members/:memberId — remove member
 // ---------------------------------------------------------------------------
-router.delete("/:committeeId/members/:memberId", async (req, res) => {
+router.delete("/:committeeId/members/:memberId", requireAuth, async (req, res) => {
   try {
     await prisma.member.delete({ where: { id: req.params.memberId } });
     res.json({ deleted: true });
