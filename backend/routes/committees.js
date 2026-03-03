@@ -389,22 +389,42 @@ router.post("/:id/members", requireAuth, async (req, res) => {
     // ── Send KingsChat notification ─────────────────────────────────────
     const memberKcId = kcId || member.kcId;
     console.log("[Events Add Member] memberKcId:", memberKcId, "| kcId from body:", kcId, "| member.kcId:", member.kcId);
-    if (memberKcId) {
       const kcMessage = [
-        `📋 Prime Ops — Committee Appointment`,
+        `📋 Prime Ops — Appointment as ${roleLabel} of the ${committee.name} for ${committee.event?.title || "a project"}`,
         ``,
-        `Hi ${name.trim()},`,
+        `Dear Esteemed ${name.trim()},`,
         ``,
-        `You have been appointed as ${roleLabel} of the ${committee.name} committee for "${committee.event?.title || "an upcoming event"}".`,
+        `Warm greetings in Jesus' name.`,
+        `This is to kindly inform you that you have been appointed as ${roleLabel} of the ${committee.name}. Congratulations!`,
         ``,
+        `Kindly proceed to:`,
         `🔗 Access your Committee Portal:`,
         `${portalLink}`,
         ``,
         `📄 Download your Appointment Letter:`,
         `${backendUrl}${getLetterDownloadPath(`appointment-${member.id}.pdf`)}`,
         ``,
-        `Log in to view your responsibilities, tasks, and collaborate with your team.`,
+        `Also, kindly log in to view your responsibilities, tasks, and collaborate with your team.`,
+        ``,
+        `Thank you and congratulations once again`,
+        ``,
+        `Office of the CEO`,
       ].join("\n");
+    if (memberKcId) {
+      const kcMessage = `You have been appointed as ${roleLabel} for the ${committee.name} committee in "${committee.event?.title}". Visit your portal to view details: ${portalLink}`;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       sendKcMessageToKcId(memberKcId, kcMessage)
         .then((sent) => {
@@ -429,7 +449,7 @@ router.post("/:id/members", requireAuth, async (req, res) => {
             userId,
             type: "committee_appointment",
             title: `You've been appointed as ${roleLabel}`,
-            message: `You have been added to the ${committee.name} committee for "${committee.event?.title}". Your appointment letter is ready for download.`,
+            message: `Congratulations! You have been appointed to the ${committee.name} committee for "${committee.event?.title}". Kindly log in to view your responsibilities and download your appointment letter.`,
             link: `/portal/committee/${committee.id}`,
             metadata: JSON.stringify({
               committeeId: committee.id,
