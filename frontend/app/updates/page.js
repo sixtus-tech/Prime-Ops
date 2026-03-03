@@ -301,7 +301,7 @@ export default function StatusUpdatesPage() {
         <div>
           <h1 className="font-display text-2xl text-surface-900">Status Updates</h1>
           <p className="text-surface-500 text-sm mt-1">
-            View all committee progress reports and generate consolidated event-wide summaries.
+            View all committee progress reports and generate consolidated project-wide summaries.
           </p>
         </div>
 

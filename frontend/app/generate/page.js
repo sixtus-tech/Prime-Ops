@@ -97,7 +97,7 @@ export default function GeneratePage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-surface-900">Proposal Generator</h1>
         <p className="text-surface-500 mt-1">
-          Describe your event idea and we'll generate a complete proposal for you.
+          Describe your project idea and we'll generate a complete proposal for you.
         </p>
       </div>
 
@@ -172,7 +172,7 @@ export default function GeneratePage() {
                         d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                       />
                     </svg>
-                    Create Event
+                    Create Project
                   </>
                 )}
               </button>

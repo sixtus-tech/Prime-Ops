@@ -62,7 +62,7 @@ export default function PortalPage() {
             <h3 className="font-display text-lg text-surface-900 mb-1">No committees yet</h3>
             <p className="text-surface-500 text-sm">
               You haven&apos;t been assigned to any committees yet. The Program Director
-              will add you when an event is being planned.
+              will add you when a project is being planned.
             </p>
           </div>
         ) : (

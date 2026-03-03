@@ -58,9 +58,9 @@ export default function EventsPage() {
       {/* Header */}
       <div className="bg-brand-600 text-white px-6 lg:px-10 py-10 flex items-end justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="font-display text-3xl lg:text-4xl">Events</h1>
+          <h1 className="font-display text-3xl lg:text-4xl">Projects</h1>
           <p className="mt-2 text-white/70">
-            Manage all your events, track status, and oversee committees.
+            Manage all your projects, track status, and oversee committees.
           </p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
@@ -71,7 +71,7 @@ export default function EventsPage() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/>
             </svg>
-            New Event
+            New Project
           </Link>
           <Link
             href="/"
@@ -121,9 +121,9 @@ export default function EventsPage() {
             <div className="w-16 h-16 rounded-full bg-surface-100 flex items-center justify-center mx-auto mb-4 text-2xl">
               📅
             </div>
-            <p className="text-surface-700 font-medium text-lg">No events yet</p>
+            <p className="text-surface-700 font-medium text-lg">No projects yet</p>
             <p className="text-surface-400 text-sm mt-1">
-              Create an event manually or generate one from a smart proposal.
+              Create a project manually or generate one from a smart proposal.
             </p>
             <div className="flex gap-2 justify-center mt-4">
               <Link href="/events/new" className="text-brand-500 hover:text-brand-600 text-sm font-medium">

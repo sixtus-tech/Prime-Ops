@@ -534,7 +534,7 @@ export default function EventDetailPage() {
         {/* ─── Event Details (editable) ─── */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-xl text-surface-900">Event Details</h2>
+            <h2 className="font-display text-xl text-surface-900">Project Details</h2>
             <button onClick={() => setEditingDetails(!editingDetails)} className="text-brand-500 hover:text-brand-600 text-sm font-medium transition-colors">{editingDetails ? "Cancel" : "Edit Details"}</button>
           </div>
           {editingDetails ? (

@@ -147,14 +147,14 @@ export default function DashboardPage() {
       <div className="bg-brand-600 text-white px-6 lg:px-10 py-10">
         <h1 className="font-display text-3xl lg:text-4xl">Dashboard</h1>
         <p className="mt-2 text-white/70">
-          Overview of your events, committees, and approval pipeline.
+          Overview of your projects, committees, and approval pipeline.
         </p>
       </div>
 
       <div className="px-6 lg:px-10 py-8 space-y-8">
         {/* ─── KPI Cards ─── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          <KpiCard label="Total Events" value={t.events || 0} icon="📅" />
+          <KpiCard label="Total Projects" value={t.events || 0} icon="📅" />
           <KpiCard label="Committees" value={t.committees || 0} icon="🤝" />
           <KpiCard label="Members" value={t.members || 0} icon="👥" />
           <KpiCard label="Proposals" value={t.proposals || 0} icon="📝" />
@@ -170,9 +170,9 @@ export default function DashboardPage() {
 
         {/* ─── Charts row ─── */}
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Events by Status */}
+          {/* Projects by Status */}
           <div className="bg-white rounded-xl border border-surface-200 p-6">
-            <h3 className="font-display text-lg text-surface-900 mb-4">Events by Status</h3>
+            <h3 className="font-display text-lg text-surface-900 mb-4">Projects by Status</h3>
             {stats?.eventsByStatus && Object.keys(stats.eventsByStatus).length > 0 ? (
               <StatusBarChart data={stats.eventsByStatus} colors={STATUS_COLORS} />
             ) : (
@@ -264,7 +264,7 @@ export default function DashboardPage() {
                 ))
               ) : (
                 <div className="px-6 py-8 text-center text-surface-400 text-sm">
-                  No activity yet — create your first event!
+                  No activity yet — create your first project!
                 </div>
               )}
             </div>
@@ -273,10 +273,10 @@ export default function DashboardPage() {
 
         {/* ─── Bottom row ─── */}
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Recent Events */}
+          {/* Recent Projects */}
           <div className="bg-white rounded-xl border border-surface-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-surface-100 flex items-center justify-between">
-              <h3 className="font-display text-lg text-surface-900">Recent Events</h3>
+              <h3 className="font-display text-lg text-surface-900">Recent Projects</h3>
               <Link href="/events" className="text-brand-500 hover:text-brand-600 text-sm font-medium">
                 View all →
               </Link>
@@ -307,10 +307,10 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Upcoming Events */}
+          {/* Upcoming Projects */}
           <div className="bg-white rounded-xl border border-surface-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-surface-100">
-              <h3 className="font-display text-lg text-surface-900">Upcoming Events</h3>
+              <h3 className="font-display text-lg text-surface-900">Upcoming Projects</h3>
             </div>
             <div className="divide-y divide-surface-100">
               {stats?.upcomingEvents?.length > 0 ? (
@@ -341,7 +341,7 @@ export default function DashboardPage() {
                 ))
               ) : (
                 <div className="px-6 py-8 text-center text-surface-400 text-sm">
-                  No upcoming events scheduled
+                  No upcoming projects scheduled
                 </div>
               )}
             </div>

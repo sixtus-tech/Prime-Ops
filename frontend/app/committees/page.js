@@ -91,7 +91,7 @@ export default function CommitteesPage() {
       <div className="bg-brand-600 text-white px-6 lg:px-10 py-10">
         <h1 className="font-display text-3xl lg:text-4xl">Committees</h1>
         <p className="mt-2 text-white/70">
-          Overview of all committees across your events.
+          Overview of all committees across your projects.
         </p>
 
         {/* Stats */}
@@ -125,10 +125,10 @@ export default function CommitteesPage() {
             </div>
             <p className="text-surface-700 font-medium text-lg">No committees yet</p>
             <p className="text-surface-400 text-sm mt-1">
-              Create an event first, then add committees to it.
+              Create a project first, then add committees to it.
             </p>
             <Link href="/events" className="text-brand-500 hover:text-brand-600 text-sm font-medium mt-3 inline-block">
-              Go to Events →
+              Go to Projects →
             </Link>
           </div>
         ) : (
@@ -182,7 +182,7 @@ export default function CommitteesPage() {
                       onClick={(e) => e.stopPropagation()}
                       className="text-xs text-brand-500 hover:text-brand-600 font-medium px-3 py-1.5 rounded-lg hover:bg-brand-50 transition-colors flex-shrink-0 hidden sm:block"
                     >
-                      View Event →
+                      View Project →
                     </Link>
                     <svg
                       width="20"
@@ -276,7 +276,7 @@ export default function CommitteesPage() {
                   <div className="flex-1 min-w-0">
                     <h2 className="font-display text-lg text-surface-700">Unassigned Committees</h2>
                     <p className="text-xs text-surface-400 mt-0.5">
-                      {unlinked.length} committee{unlinked.length !== 1 ? "s" : ""} not linked to any event
+                      {unlinked.length} committee{unlinked.length !== 1 ? "s" : ""} not linked to any project
                     </p>
                   </div>
                   <svg
