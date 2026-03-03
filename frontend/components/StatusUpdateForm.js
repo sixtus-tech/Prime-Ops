@@ -315,7 +315,7 @@ export default function StatusUpdateForm({ committeeId, committeeName, onSubmitt
   return (
     <div className="space-y-4">
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <p className="text-sm text-blue-800">Share your progress — type notes, upload photos, documents (PDF, Word, Excel), or record a voice update. The AI will analyze everything and generate a professional, measurable status report for you to review before submitting.</p>
+        <p className="text-sm text-blue-800">Share your progress — type notes, upload photos, documents (PDF, Word, Excel), or record a voice update. Everything will be analyzed to generate a professional, measurable status report for you to review before submitting.</p>
       </div>
 
       <div>
@@ -359,7 +359,7 @@ export default function StatusUpdateForm({ committeeId, committeeName, onSubmitt
 
       <button onClick={handleGenerate} disabled={generating || (!text.trim() && !voiceText && files.length === 0)}
         className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-surface-300 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2">
-        {generating ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />AI is analyzing your files...</> : <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83" /></svg>Generate Preview</>}
+        {generating ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Analyzing your files...</> : <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83" /></svg>Generate Preview</>}
       </button>
     </div>
   );

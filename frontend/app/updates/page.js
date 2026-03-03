@@ -214,14 +214,14 @@ function ConsolidatedReport({ report, onClose }) {
           </div>
         )}
 
-        {/* AI Recommendations */}
+        {/* Recommendations */}
         {report.recommendations?.length > 0 && (
           <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
             <h3 className="font-display text-sm text-purple-900 mb-2 flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83" />
               </svg>
-              AI Recommendations
+              Recommendations
             </h3>
             <div className="space-y-1.5">
               {report.recommendations.map((r, i) => (

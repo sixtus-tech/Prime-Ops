@@ -97,7 +97,7 @@ export default function GeneratePage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-surface-900">Proposal Generator</h1>
         <p className="text-surface-500 mt-1">
-          Describe your event idea and AI will generate a complete proposal.
+          Describe your event idea and we'll generate a complete proposal for you.
         </p>
       </div>
 

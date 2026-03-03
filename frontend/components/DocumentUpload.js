@@ -152,7 +152,7 @@ export default function DocumentUpload({ eventType, onProposalReady, committeeCo
               <p className="text-sm font-medium text-green-900">
                 Extracted {extractedText.length.toLocaleString()} characters from {file?.name}
               </p>
-              <p className="text-xs text-green-600">The AI will use this document as reference.</p>
+              <p className="text-xs text-green-600">This document will be used as reference.</p>
             </div>
           </div>
 

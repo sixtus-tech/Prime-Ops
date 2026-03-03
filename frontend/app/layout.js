@@ -5,7 +5,7 @@ import AppShell from "../components/AppShell";
 export const metadata = {
   title: "Prime Ops — Operations Management Platform",
   description:
-    "AI-powered event proposal generation and committee management",
+    "Smart event proposal generation and committee management",
 };
 
 export default function RootLayout({ children }) {

@@ -80,7 +80,7 @@ export default function EventsPage() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
             </svg>
-            AI Generate
+            Auto Generate
           </Link>
         </div>
       </div>
@@ -123,7 +123,7 @@ export default function EventsPage() {
             </div>
             <p className="text-surface-700 font-medium text-lg">No events yet</p>
             <p className="text-surface-400 text-sm mt-1">
-              Create an event manually or generate one from an AI proposal.
+              Create an event manually or generate one from a smart proposal.
             </p>
             <div className="flex gap-2 justify-center mt-4">
               <Link href="/events/new" className="text-brand-500 hover:text-brand-600 text-sm font-medium">
@@ -131,7 +131,7 @@ export default function EventsPage() {
               </Link>
               <span className="text-surface-300">|</span>
               <Link href="/" className="text-brand-500 hover:text-brand-600 text-sm font-medium">
-                AI Generate →
+                Auto Generate →
               </Link>
             </div>
           </div>

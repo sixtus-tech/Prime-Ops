@@ -120,7 +120,7 @@ export default function ChatMode({ eventType, onProposalReady, committeeContext 
         {
           role: "assistant",
           content:
-            "Hello! I'm Prime Ops AI — your event planning assistant. Let's create something amazing together! What kind of event are you planning?",
+            "Hello! I'm your Prime Ops event planning assistant. Let's create something amazing together! What kind of event are you planning?",
         },
       ]);
     } finally {
