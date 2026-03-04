@@ -14,8 +14,9 @@ async function apiFetch(path, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
   try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     const res = await fetch(`${API}${path}`, {
-      headers: { "Content-Type": "application/json", ...options.headers },
+      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...options.headers },
       ...options,
       signal: controller.signal,
     });
