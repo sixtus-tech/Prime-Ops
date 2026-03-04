@@ -174,7 +174,7 @@ router.post("/from-proposal", requireAuth, async (req, res) => {
 
     logActivity({
       action: "event_created",
-      description: `Event "${event.title}" created from AI proposal with ${event.committees?.length || 0} committees`,
+      description: `Event "${event.title}" created from generated proposal with ${event.committees?.length || 0} committees`,
       eventId: event.id,
     }).catch(() => {});
 
@@ -299,7 +299,7 @@ router.post("/:id/set-deadlines", requireAuth, async (req, res) => {
       const existingTasks = await prisma.task.count({ where: { committeeId: committee.id } });
       if (existingTasks === 0) {
         allTasksToCreate.push(
-          { title: `Submit ${committee.name} Proposal`, priority: "high", dueDate: deadline, eventId: event.id, committeeId: committee.id, createdBy: "System", status: "pending" },
+          { title: `Submit ${committee.name} Workplan`, priority: "high", dueDate: deadline, eventId: event.id, committeeId: committee.id, createdBy: "System", status: "pending" },
           { title: `${committee.name} — Finalize Budget`, priority: "normal", dueDate: new Date(deadline.getTime() + 3 * 86400000), eventId: event.id, committeeId: committee.id, createdBy: "System", status: "pending" },
           { title: `${committee.name} — Confirm Team`, priority: "normal", dueDate: new Date(deadline.getTime() - 3 * 86400000), eventId: event.id, committeeId: committee.id, createdBy: "System", status: "pending" }
         );
@@ -343,7 +343,7 @@ router.post("/:id/set-deadlines", requireAuth, async (req, res) => {
         committeeId: d.committeeId,
         type: "deadline_set",
         title: "Due date set for your committee",
-        message: `Your committee proposal is due by ${deadline.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}.`,
+        message: `Your committee workplan is due by ${deadline.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}.`,
         link: `/portal/committee/${d.committeeId}`,
         metadata: { committeeId: d.committeeId, deadline: d.proposalDeadline },
       }).catch(() => {});

@@ -339,10 +339,10 @@ router.post("/:id/action", requireAuth, async (req, res) => {
         commented: "commented on",
       };
 
-      let kcMessage = `Your proposal "${existing.title}" has been ${actionLabels[action]} by ${performedBy}.`;
+      let kcMessage = `Your workplan "${existing.title}" has been ${actionLabels[action]} by ${performedBy}.`;
       if (comment) kcMessage += `\n\nDirector's note: "${comment}"`;
-      if (pdfLink && action === "approved") kcMessage += `\n\nDownload approved proposal: ${pdfLink}`;
-      if (action === "revision_requested") kcMessage += `\n\nPlease review the feedback and resubmit your proposal.`;
+      if (pdfLink && action === "approved") kcMessage += `\n\nDownload approved workplan: ${pdfLink}`;
+      if (action === "revision_requested") kcMessage += `\n\nPlease review the feedback and resubmit your workplan.`;
 
       await notifyCommitteeMembers({
         committeeId: existing.committeeId,

@@ -69,23 +69,23 @@ async function checkDeadlineReminders() {
       const messages = {
         "7_day_reminder": {
           title: `📅 7 days until due date — ${committee.name}`,
-          message: `Your proposal for ${committee.name} (${committee.event?.title}) is due in 7 days on ${formattedDate}. Start working on it if you haven't already!`,
+          message: `Your workplan for ${committee.name} (${committee.event?.title}) is due in 7 days on ${formattedDate}. Start working on it if you haven't already!`,
         },
         "3_day_reminder": {
           title: `⚠️ 3 days left — ${committee.name}`,
-          message: `Only 3 days until the ${committee.name} proposal is due! Due date: ${formattedDate}. Please finalize and submit your proposal.`,
+          message: `Only 3 days until the ${committee.name} workplan is due! Due date: ${formattedDate}. Please finalize and submit your workplan.`,
         },
         "1_day_reminder": {
           title: `🚨 Due tomorrow — ${committee.name}`,
-          message: `The ${committee.name} proposal is due TOMORROW (${formattedDate}). Submit your proposal today to stay on track.`,
+          message: `The ${committee.name} workplan is due TOMORROW (${formattedDate}). Submit your workplan today to stay on track.`,
         },
         "due_today": {
           title: `🔴 Due TODAY — ${committee.name}`,
-          message: `The ${committee.name} proposal is due TODAY. Please submit immediately.`,
+          message: `The ${committee.name} workplan is due TODAY. Please submit immediately.`,
         },
         "overdue": {
           title: `❗ OVERDUE (${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""}) — ${committee.name}`,
-          message: `The ${committee.name} proposal was due ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""} ago on ${shortDate}. Please submit as soon as possible.`,
+          message: `The ${committee.name} workplan was due ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""} ago on ${shortDate}. Please submit as soon as possible.`,
         },
       };
 
@@ -117,7 +117,7 @@ async function checkDeadlineReminders() {
           eventId: committee.event?.id,
           type: "committee_overdue",
           title: `Committee overdue: ${committee.name}`,
-          message: `${committee.name} (${committee.event?.title}) proposal is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""} overdue. Chair(s): ${chairNames}.`,
+          message: `${committee.name} (${committee.event?.title}) workplan is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""} overdue. Chair(s): ${chairNames}.`,
           link: `/events/${committee.event?.id}`,
           metadata: { committeeId: committee.id, eventId: committee.event?.id, daysOverdue: Math.abs(daysUntil) },
           senderUserId,

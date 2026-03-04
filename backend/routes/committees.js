@@ -174,8 +174,8 @@ router.post("/:id/set-deadline", requireAuth, async (req, res) => {
       const eventDate = committee.event?.startDate;
       const tasksToCreate = [
         {
-          title: `Submit ${committee.name} Proposal`,
-          description: `Create and submit the committee proposal for director review.`,
+          title: `Submit ${committee.name} Workplan`,
+          description: `Create and submit the committee workplan for director review.`,
           priority: "high",
           dueDate: deadline,
         },
@@ -214,14 +214,14 @@ router.post("/:id/set-deadline", requireAuth, async (req, res) => {
       committeeId: committee.id,
       type: "deadline_set",
       title: "Due date set for your committee",
-      message: `Proposal for ${committee.name} is due by ${deadline.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}. Make sure to submit before the due date.`,
+      message: `Workplan for ${committee.name} is due by ${deadline.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}. Make sure to submit before the due date.`,
       link: `/portal/committee/${committee.id}`,
       metadata: { committeeId: committee.id, deadline: proposalDeadline },
     });
 
     await logActivity({
       action: "deadline_set",
-      description: `Proposal due date set for ${committee.name}: ${deadline.toLocaleDateString()}`,
+      description: `Workplan due date set for ${committee.name}: ${deadline.toLocaleDateString()}`,
       eventId: committee.event?.id,
       performedBy: "Director",
     });
@@ -253,7 +253,7 @@ router.post("/:id/send-reminder", requireAuth, async (req, res) => {
       committeeId: committee.id,
       type: "deadline_manual_reminder",
       title: `Reminder from Project Director — ${committee.name}`,
-      message: `The Project Director is following up on the ${committee.name} proposal for ${committee.event?.title}. Due date: ${deadlineStr}. Please submit your proposal as soon as possible.`,
+      message: `The Project Director is following up on the ${committee.name} workplan for ${committee.event?.title}. Due date: ${deadlineStr}. Please submit your workplan as soon as possible.`,
       link: `/portal/committee/${committee.id}`,
       metadata: { committeeId: committee.id, manual: true },
     });

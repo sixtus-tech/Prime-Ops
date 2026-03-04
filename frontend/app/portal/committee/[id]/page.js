@@ -123,7 +123,7 @@ function MemberCommentForm({ proposalId, committeeId, authFetch, onCommented }) 
           type="text"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="Share a suggestion, concern, or idea about this proposal..."
+          placeholder="Share a suggestion, concern, or idea about this workplan..."
           className="flex-1 rounded-lg border border-surface-200 px-3 py-2 text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400"
         />
         <button
@@ -295,7 +295,7 @@ export default function CommitteeDetailPage() {
       setEditingProposal(false);
       fetchCommittee();
     } catch (err) {
-      alert("Failed to generate proposal: " + err.message);
+      alert("Failed to generate workplan: " + err.message);
     } finally {
       setGenerating(false);
     }
@@ -319,20 +319,20 @@ export default function CommitteeDetailPage() {
       setEditingProposal(false);
       fetchCommittee();
     } catch (err) {
-      alert("Failed to save proposal: " + err.message);
+      alert("Failed to save workplan: " + err.message);
     }
   }
 
   // ── Submit proposal for director review ─────────────────────────
   async function handleSubmit(proposalId) {
-    if (!confirm("Submit this proposal to the Project Director for review?")) return;
+    if (!confirm("Submit this workplan to the Project Director for review?")) return;
     setSubmitting(true);
     try {
       await authFetch(`/portal/committee/${id}/submit`, {
         method: "POST",
         body: JSON.stringify({ proposalId }),
       });
-      alert("Proposal submitted for review!");
+      alert("Workplan submitted for review!");
       setSavedProposalId(null);
       setGeneratedProposal(null);
       setEditingProposal(false);
@@ -522,7 +522,7 @@ export default function CommitteeDetailPage() {
         <div className="flex gap-1 bg-surface-100 rounded-xl p-1 mb-6 overflow-x-auto">
           {[
             { id: "overview", label: "Overview" },
-            { id: "proposal", label: hasProposals ? `Proposals (${committee.proposals.length})` : (isChair ? "Create Proposal" : "Proposals") },
+            { id: "proposal", label: hasProposals ? `Workplans (${committee.proposals.length})` : (isChair ? "Create Workplan" : "Workplans") },
             { id: "updates", label: "Updates" },
             { id: "milestones", label: "Milestones" },
             { id: "tasks", label: "Tasks & Due Dates" },
@@ -572,16 +572,16 @@ export default function CommitteeDetailPage() {
             )}
 
             <div className="bg-white rounded-xl border border-surface-200 p-6">
-              <h3 className="font-display text-lg text-surface-900 mb-3">Proposals</h3>
+              <h3 className="font-display text-lg text-surface-900 mb-3">Workplans</h3>
               {!hasProposals ? (
                 <div className="text-center py-8">
-                  <p className="text-surface-500 text-sm mb-3">No proposals created yet.</p>
+                  <p className="text-surface-500 text-sm mb-3">No workplans created yet.</p>
                   {isChair && (
                     <button
                       onClick={() => setActiveTab("proposal")}
                       className="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all"
                     >
-                      Create Your First Proposal
+                      Create Your First Workplan
                     </button>
                   )}
                 </div>
@@ -606,7 +606,7 @@ export default function CommitteeDetailPage() {
                               <polyline points="9 18 15 12 9 6"/>
                             </svg>
                             <div>
-                              <p className="text-sm font-medium text-surface-900">{parsed?.title || "Untitled Proposal"}</p>
+                              <p className="text-sm font-medium text-surface-900">{parsed?.title || "Untitled Workplan"}</p>
                               <p className="text-xs text-surface-400 mt-0.5">
                                 Created {new Date(p.createdAt).toLocaleDateString()} via {p.inputType}
                               </p>
@@ -736,7 +736,7 @@ export default function CommitteeDetailPage() {
                 {!hasProposals ? (
                   <div className="bg-surface-50 border border-surface-200 rounded-xl p-8 text-center">
                     <div className="text-3xl mb-2">📝</div>
-                    <p className="text-sm font-medium text-surface-700">No proposals yet</p>
+                    <p className="text-sm font-medium text-surface-700">No workplans yet</p>
                     <p className="text-xs text-surface-500 mt-1">Your committee head will create and submit proposals. You&apos;ll be able to view and comment on them here.</p>
                   </div>
                 ) : (
@@ -765,7 +765,7 @@ export default function CommitteeDetailPage() {
                                   <polyline points="9 18 15 12 9 6"/>
                                 </svg>
                                 <div>
-                                  <p className="text-sm font-medium text-surface-900">{parsed?.title || "Untitled Proposal"}</p>
+                                  <p className="text-sm font-medium text-surface-900">{parsed?.title || "Untitled Workplan"}</p>
                                   <p className="text-xs text-surface-400 mt-0.5">
                                     Created {new Date(p.createdAt).toLocaleDateString()} via {p.inputType}
                                   </p>
@@ -840,8 +840,8 @@ export default function CommitteeDetailPage() {
                         <span className="text-green-600 text-lg">✅</span>
                         <span className="text-sm font-medium text-green-900">
                           {editingProposal
-                            ? "Editing proposal — make your changes below."
-                            : "Proposal generated — review it below before submitting."}
+                            ? "Editing workplan — make your changes below."
+                            : "Workplan generated — review it below before submitting."}
                         </span>
                       </div>
                       <div className="flex gap-2">
@@ -933,7 +933,7 @@ export default function CommitteeDetailPage() {
                               <span className="text-xl">🔄</span>
                               <div>
                                 <p className="text-sm font-semibold text-orange-900">Revision Requested</p>
-                                <p className="text-xs text-orange-700 mt-0.5">{parsed?.title || "Untitled Proposal"}</p>
+                                <p className="text-xs text-orange-700 mt-0.5">{parsed?.title || "Untitled Workplan"}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -990,7 +990,7 @@ export default function CommitteeDetailPage() {
                                     <polyline points="9 18 15 12 9 6"/>
                                   </svg>
                                   <div>
-                                    <p className="text-sm font-medium text-surface-900">{parsed?.title || "Untitled Proposal"}</p>
+                                    <p className="text-sm font-medium text-surface-900">{parsed?.title || "Untitled Workplan"}</p>
                                     <p className="text-xs text-surface-400 mt-0.5">
                                       Created {new Date(p.createdAt).toLocaleDateString()} via {p.inputType}
                                     </p>
@@ -1224,7 +1224,7 @@ export default function CommitteeDetailPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
                 <div className="text-3xl mb-2">⏳</div>
                 <p className="text-sm font-medium text-blue-900">Proposal pending approval</p>
-                <p className="text-xs text-blue-600 mt-1">You can submit status updates once your proposal is approved by the Project Director.</p>
+                <p className="text-xs text-blue-600 mt-1">You can submit status updates once your workplan is approved by the Project Director.</p>
               </div>
             ) : (
               <div className="bg-surface-50 border border-surface-200 rounded-xl p-6 text-center">
