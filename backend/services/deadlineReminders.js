@@ -4,6 +4,7 @@ const { notifyCommitteeMembers, notifyEventDirector } = require("./notifications
 /**
  * Check all committee deadlines and send reminder notifications.
  * Only notifies members of the specific committee and the director who owns the event.
+ * KC messages are sent FROM the event's creator, not a random director.
  */
 async function checkDeadlineReminders() {
   try {
@@ -35,23 +36,17 @@ async function checkDeadlineReminders() {
 
       // Determine reminder type based on days
       let reminderType = null;
-      let urgency = "normal";
 
       if (daysUntil === 7) {
         reminderType = "7_day_reminder";
-        urgency = "normal";
       } else if (daysUntil === 3) {
         reminderType = "3_day_reminder";
-        urgency = "high";
       } else if (daysUntil === 1) {
         reminderType = "1_day_reminder";
-        urgency = "urgent";
       } else if (daysUntil === 0) {
         reminderType = "due_today";
-        urgency = "urgent";
       } else if (daysUntil < 0 && daysUntil >= -14) {
         reminderType = "overdue";
-        urgency = "urgent";
       }
 
       if (!reminderType) continue;
@@ -94,7 +89,10 @@ async function checkDeadlineReminders() {
       const msg = messages[reminderType];
       if (!msg) continue;
 
-      // Notify ONLY this committee's members (not other committees/events)
+      // Use the event creator as the sender so KC messages come from the right director
+      const senderUserId = committee.event?.createdById || null;
+
+      // Notify ONLY this committee's members
       await notifyCommitteeMembers({
         committeeId: committee.id,
         type: `deadline_${reminderType}`,
@@ -102,6 +100,7 @@ async function checkDeadlineReminders() {
         message: msg.message,
         link: `/portal/committee/${committee.id}`,
         metadata: { committeeId: committee.id, reminderType, daysUntil },
+        senderUserId,
       });
 
       // Notify ONLY the director who owns this event (not all directors)
@@ -118,6 +117,7 @@ async function checkDeadlineReminders() {
           message: `${committee.name} (${committee.event?.title}) proposal is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""} overdue. Chair(s): ${chairNames}.`,
           link: `/events/${committee.event?.id}`,
           metadata: { committeeId: committee.id, eventId: committee.event?.id, daysOverdue: Math.abs(daysUntil) },
+          senderUserId,
         });
       }
 
