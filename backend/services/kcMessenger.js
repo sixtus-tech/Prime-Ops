@@ -1,23 +1,33 @@
 const prisma = require("./db");
 
-// ---------------------------------------------------------------------------
-// KingsChat Messaging Service
-// Uses the KingsChat API to send direct messages to users.
-// Replicates the kingschat-web-sdk sendMessage functionality server-side.
-// ---------------------------------------------------------------------------
-
 const KC_BASE_URL = "https://connect.kingsch.at";
 const KC_CLIENT_ID = process.env.KC_CLIENT_ID || "com.kingschat";
 
+// Rate limit: minimum ms between KC API calls
+const SEND_DELAY_MS = 1500;
+let lastSendTime = 0;
+
+/**
+ * Wait to respect rate limits before sending
+ */
+async function rateLimitWait() {
+  const now = Date.now();
+  const elapsed = now - lastSendTime;
+  if (elapsed < SEND_DELAY_MS) {
+    await new Promise((resolve) => setTimeout(resolve, SEND_DELAY_MS - elapsed));
+  }
+  lastSendTime = Date.now();
+}
+
 /**
  * Send a message to a KingsChat user.
- * @param {string} recipientKcId - The KingsChat user_id of the recipient
- * @param {string} message - The message text to send
- * @param {string} accessToken - A valid KC access token with send_chat_message scope
- * @returns {Promise<boolean>} true if sent successfully
  */
 async function sendKcMessage(recipientKcId, message, accessToken) {
   try {
+    if (!recipientKcId || !accessToken) return false;
+
+    await rateLimitWait();
+
     const res = await fetch(`${KC_BASE_URL}/api/users/${recipientKcId}/new_message`, {
       method: "POST",
       headers: {
@@ -40,9 +50,29 @@ async function sendKcMessage(recipientKcId, message, accessToken) {
       return true;
     }
 
-    // If 401, token might be expired
     if (res.status === 401) {
       console.warn("[KC Messenger] Access token expired or invalid");
+      return false;
+    }
+
+    if (res.status === 429) {
+      console.warn("[KC Messenger] Rate limited — will retry after delay");
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      lastSendTime = Date.now();
+      const retry = await fetch(`${KC_BASE_URL}/api/users/${recipientKcId}/new_message`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          message: { body: { text: { body: message } } },
+        }),
+      });
+      if (retry.ok) return true;
+      const retryBody = await retry.text().catch(() => "");
+      console.error(`[KC Messenger] Retry failed (${retry.status}):`, retryBody);
       return false;
     }
 
@@ -57,8 +87,6 @@ async function sendKcMessage(recipientKcId, message, accessToken) {
 
 /**
  * Refresh a KingsChat access token using the refresh token.
- * @param {string} refreshToken
- * @returns {Promise<{accessToken: string, expiresInMillis: number, refreshToken: string}|null>}
  */
 async function refreshKcToken(refreshToken) {
   try {
@@ -94,23 +122,18 @@ async function refreshKcToken(refreshToken) {
 
 /**
  * Get a valid KC access token for a user, refreshing if needed.
- * Updates the stored tokens in the database.
- * @param {object} user - User record with kcAccessToken, kcRefreshToken, kcTokenExpiresAt
- * @returns {Promise<string|null>} valid access token or null
  */
 async function getValidToken(user) {
   if (!user.kcAccessToken) return null;
 
-  // Check if token is still valid (with 5min buffer)
   const now = new Date();
-  const buffer = 5 * 60 * 1000; // 5 minutes
+  const buffer = 5 * 60 * 1000;
   const expiresAt = user.kcTokenExpiresAt ? new Date(user.kcTokenExpiresAt) : null;
 
   if (expiresAt && expiresAt.getTime() - buffer > now.getTime()) {
     return user.kcAccessToken;
   }
 
-  // Token expired or no expiry info — try refreshing
   if (!user.kcRefreshToken) {
     console.warn(`[KC Messenger] No refresh token for user ${user.id}`);
     return null;
@@ -118,7 +141,6 @@ async function getValidToken(user) {
 
   const refreshed = await refreshKcToken(user.kcRefreshToken);
   if (!refreshed) {
-    // Clear invalid tokens
     await prisma.user.update({
       where: { id: user.id },
       data: { kcAccessToken: null, kcRefreshToken: null, kcTokenExpiresAt: null },
@@ -126,7 +148,6 @@ async function getValidToken(user) {
     return null;
   }
 
-  // Save new tokens
   const newExpiry = new Date(Date.now() + refreshed.expiresInMillis);
   await prisma.user.update({
     where: { id: user.id },
@@ -141,37 +162,49 @@ async function getValidToken(user) {
 }
 
 /**
+ * Find the best sender — prefer the specified user, then any director, then any user.
+ */
+async function getSystemSender(preferredUserId) {
+  if (preferredUserId) {
+    const preferred = await prisma.user.findFirst({
+      where: { id: preferredUserId, kcAccessToken: { not: null }, kcId: { not: null } },
+      select: { id: true, kcId: true, kcAccessToken: true, kcRefreshToken: true, kcTokenExpiresAt: true },
+    });
+    if (preferred) return preferred;
+  }
+
+  let sender = await prisma.user.findFirst({
+    where: { role: "director", kcAccessToken: { not: null }, kcId: { not: null } },
+    select: { id: true, kcId: true, kcAccessToken: true, kcRefreshToken: true, kcTokenExpiresAt: true },
+  });
+  if (sender) return sender;
+
+  return await prisma.user.findFirst({
+    where: { kcAccessToken: { not: null }, kcId: { not: null } },
+    select: { id: true, kcId: true, kcAccessToken: true, kcRefreshToken: true, kcTokenExpiresAt: true },
+  });
+}
+
+/**
  * Send a KingsChat notification to a user by their Prime Ops user ID.
- * Automatically handles token refresh.
- * @param {string} userId - Prime Ops user ID
- * @param {string} message - Message to send
- * @returns {Promise<boolean>}
  */
 async function sendKcNotification(userId, message, senderUserId) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        kcId: true,
-        kcAccessToken: true,
-        kcRefreshToken: true,
-        kcTokenExpiresAt: true,
-      },
+      select: { id: true, kcId: true, kcAccessToken: true, kcRefreshToken: true, kcTokenExpiresAt: true },
     });
 
-    if (!user?.kcId) {
-      // User doesn't have KingsChat linked
-      return false;
-    }
+    if (!user?.kcId) return false;
 
-    // We need a sender's token — use any director's token or a service token
-    // For now, we use the system approach: find any user with a valid token to send from
     const sender = await getSystemSender(senderUserId);
     if (!sender) {
       console.warn("[KC Messenger] No sender with valid KC token available");
       return false;
     }
+
+    // Don't send to yourself
+    if (sender.kcId === user.kcId) return false;
 
     const token = await getValidToken(sender);
     if (!token) {
@@ -181,21 +214,18 @@ async function sendKcNotification(userId, message, senderUserId) {
 
     const sent = await sendKcMessage(user.kcId, message, token);
 
-    if (!sent) {
-      // Try one more time after force-refresh
-      if (sender.kcRefreshToken) {
-        const refreshed = await refreshKcToken(sender.kcRefreshToken);
-        if (refreshed) {
-          await prisma.user.update({
-            where: { id: sender.id },
-            data: {
-              kcAccessToken: refreshed.accessToken,
-              kcRefreshToken: refreshed.refreshToken,
-              kcTokenExpiresAt: new Date(Date.now() + refreshed.expiresInMillis),
-            },
-          });
-          return await sendKcMessage(user.kcId, message, refreshed.accessToken);
-        }
+    if (!sent && sender.kcRefreshToken) {
+      const refreshed = await refreshKcToken(sender.kcRefreshToken);
+      if (refreshed) {
+        await prisma.user.update({
+          where: { id: sender.id },
+          data: {
+            kcAccessToken: refreshed.accessToken,
+            kcRefreshToken: refreshed.refreshToken,
+            kcTokenExpiresAt: new Date(Date.now() + refreshed.expiresInMillis),
+          },
+        });
+        return await sendKcMessage(user.kcId, message, refreshed.accessToken);
       }
     }
 
@@ -207,13 +237,7 @@ async function sendKcNotification(userId, message, senderUserId) {
 }
 
 /**
- * Send a KingsChat message directly to a kcId (KingsChat user_id).
- * Used when the member has a kcId but may not have a linked User account.
- * This is the main function for committee appointment notifications.
- *
- * @param {string} recipientKcId - The KingsChat user_id of the recipient
- * @param {string} message - Message to send
- * @returns {Promise<boolean>}
+ * Send a KingsChat message directly to a kcId.
  */
 async function sendKcMessageToKcId(recipientKcId, message, senderUserId) {
   try {
@@ -221,9 +245,12 @@ async function sendKcMessageToKcId(recipientKcId, message, senderUserId) {
 
     const sender = await getSystemSender(senderUserId);
     if (!sender) {
-      console.warn("[KC Messenger] No sender with valid KC token available for direct kcId message");
+      console.warn("[KC Messenger] No sender for direct kcId message");
       return false;
     }
+
+    // Don't send to yourself
+    if (sender.kcId === recipientKcId) return false;
 
     const token = await getValidToken(sender);
     if (!token) {
@@ -234,7 +261,6 @@ async function sendKcMessageToKcId(recipientKcId, message, senderUserId) {
     const sent = await sendKcMessage(recipientKcId, message, token);
 
     if (!sent && sender.kcRefreshToken) {
-      // Retry once with a fresh token
       const refreshed = await refreshKcToken(sender.kcRefreshToken);
       if (refreshed) {
         await prisma.user.update({
@@ -257,56 +283,7 @@ async function sendKcMessageToKcId(recipientKcId, message, senderUserId) {
 }
 
 /**
- * Find the best "system sender" — a director or the first user with valid KC tokens.
- * The app sends notifications as this user's KC account.
- */
-async function getSystemSender(preferredUserId) {
-  if (preferredUserId) {
-    const preferred = await prisma.user.findFirst({
-      where: { id: preferredUserId, kcAccessToken: { not: null }, kcId: { not: null } },
-      select: { id: true, kcId: true, kcAccessToken: true, kcRefreshToken: true, kcTokenExpiresAt: true },
-    });
-    if (preferred) return preferred;
-  }
-  // Prefer directors first
-  let sender = await prisma.user.findFirst({
-    where: {
-      role: "director",
-      kcAccessToken: { not: null },
-      kcId: { not: null },
-    },
-    select: {
-      id: true,
-      kcId: true,
-      kcAccessToken: true,
-      kcRefreshToken: true,
-      kcTokenExpiresAt: true,
-    },
-  });
-
-  if (sender) return sender;
-
-  // Fallback: any user with tokens
-  return await prisma.user.findFirst({
-    where: {
-      kcAccessToken: { not: null },
-      kcId: { not: null },
-    },
-    select: {
-      id: true,
-      kcId: true,
-      kcAccessToken: true,
-      kcRefreshToken: true,
-      kcTokenExpiresAt: true,
-    },
-  });
-}
-
-/**
  * Send KC messages to all members of a committee.
- * @param {string} committeeId
- * @param {string} message
- * @param {string} [excludeUserId] - optional user to exclude
  */
 async function sendKcToCommittee(committeeId, message, excludeUserId, senderUserId) {
   try {
@@ -325,9 +302,9 @@ async function sendKcToCommittee(committeeId, message, excludeUserId, senderUser
     if (!token) return;
 
     let sentCount = 0;
+    const sentKcIds = new Set();
 
     for (const m of members) {
-      // Try member's direct kcId first, then fall back to user's kcId
       let targetKcId = m.kcId;
       if (!targetKcId && m.userId && m.userId !== excludeUserId) {
         const user = await prisma.user.findUnique({
@@ -337,10 +314,12 @@ async function sendKcToCommittee(committeeId, message, excludeUserId, senderUser
         targetKcId = user?.kcId;
       }
 
-      if (targetKcId) {
-        const sent = await sendKcMessage(targetKcId, message, token);
-        if (sent) sentCount++;
-      }
+      // Skip: no kcId, already sent, or sending to self
+      if (!targetKcId || sentKcIds.has(targetKcId) || targetKcId === sender.kcId) continue;
+
+      sentKcIds.add(targetKcId);
+      const sent = await sendKcMessage(targetKcId, message, token);
+      if (sent) sentCount++;
     }
 
     if (sentCount > 0) {
@@ -353,18 +332,22 @@ async function sendKcToCommittee(committeeId, message, excludeUserId, senderUser
 
 /**
  * Send KC messages to all directors.
- * @param {string} message
  */
 async function sendKcToDirectors(message, senderUserId) {
   try {
     const directors = await prisma.user.findMany({
       where: { role: "director", kcId: { not: null } },
-      select: { id: true },
+      select: { id: true, kcId: true },
     });
+
+    const sender = await getSystemSender(senderUserId);
+    if (!sender) return;
 
     let sentCount = 0;
     for (const d of directors) {
-      const sent = await sendKcNotification(d.id, message);
+      // Don't send to self
+      if (d.kcId === sender.kcId) continue;
+      const sent = await sendKcNotification(d.id, message, senderUserId);
       if (sent) sentCount++;
     }
 
