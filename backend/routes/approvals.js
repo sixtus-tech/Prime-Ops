@@ -2,7 +2,7 @@ const { requireAuth } = require("../middleware/auth");
 const express = require("express");
 const prisma = require("../services/db");
 const { logActivity } = require("../services/activity");
-const { notifyCommitteeMembers, notifyDirectors } = require("../services/notifications");
+const { notifyCommitteeMembers } = require("../services/notifications");
 const {
   generateMasterMilestones,
   generateSubMilestones,

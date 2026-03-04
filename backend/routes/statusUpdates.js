@@ -7,7 +7,7 @@ const prisma = require("../services/db");
 const { requireAuth } = require("../middleware/auth");
 const { generateStatusUpdate } = require("../services/claude");
 const { transcribeAudio } = require("../services/whisper");
-const { notifyDirectors, notifyCommitteeMembers } = require("../services/notifications");
+const { notifyEventDirector, notifyCommitteeMembers } = require("../services/notifications");
 const { notifyCommitteeHeads } = require("../services/notifyCommitteeHeads");
 const { logActivity } = require("../services/activity");
 const { matchStatusUpdateToMilestones } = require("../services/milestoneGenerator");
@@ -488,7 +488,7 @@ router.post("/generate", mediaUpload.array("media", 10), async (req, res) => {
     if (update.subMilestoneId) { try { const sub = await prisma.subMilestone.findUnique({ where: { id: update.subMilestoneId } }); if (sub?.status === "not_started") await prisma.subMilestone.update({ where: { id: update.subMilestoneId }, data: { status: "in_progress" } }); } catch {} }
 
     await notifyCommitteeHeads({ committeeId, type: "status_update_submitted", title: `Status update: ${committee.name}`, message: `${req.user.name} submitted a status update for ${committee.name}.`, link: `/portal/committee/${committeeId}`, metadata: { statusUpdateId: update.id, committeeId }, senderUserId: req.user?.id });
-    await notifyDirectors({ type: "status_update_submitted", title: `📊 Status update: ${committee.name}`, message: `${req.user.name} submitted a status update for ${committee.name}.`, link: `/updates`, metadata: { statusUpdateId: update.id, committeeId }, senderUserId: req.user?.id });
+    await notifyEventDirector({ eventId: committee.event?.id, type: "status_update_submitted", title: `📊 Status update: ${committee.name}`, message: `${req.user.name} submitted a status update for ${committee.name}.`, link: `/updates`, metadata: { statusUpdateId: update.id, committeeId }, senderUserId: req.user?.id });
     await logActivity({ action: "status_update", description: `${req.user.name} submitted status update for ${committee.name}`, eventId: committee.event?.id, performedBy: req.user.name });
 
     res.status(201).json({ update: { ...update, ...aiResult, media: storageUploads }, milestoneMatches: milestoneMatches.length > 0 ? milestoneMatches : undefined });

@@ -1,24 +1,20 @@
 const prisma = require("./db");
-const { notifyCommitteeMembers, notifyDirectors } = require("./notifications");
+const { notifyCommitteeMembers, notifyEventDirector } = require("./notifications");
 
 /**
  * Check all committee deadlines and send reminder notifications.
- * Should be called on a schedule (e.g., every hour or daily).
- *
- * Sends reminders at: 7 days, 3 days, 1 day before deadline,
- * and daily after the deadline until submission.
+ * Only notifies members of the specific committee and the director who owns the event.
  */
 async function checkDeadlineReminders() {
   try {
     const now = new Date();
 
-    // Get all committees with deadlines that haven't had all proposals submitted
     const committees = await prisma.committee.findMany({
       where: {
         proposalDeadline: { not: null },
       },
       include: {
-        event: { select: { id: true, title: true } },
+        event: { select: { id: true, title: true, createdById: true } },
         proposals: { select: { id: true, status: true } },
         members: { select: { userId: true, name: true, role: true } },
       },
@@ -54,7 +50,6 @@ async function checkDeadlineReminders() {
         reminderType = "due_today";
         urgency = "urgent";
       } else if (daysUntil < 0 && daysUntil >= -14) {
-        // Overdue — remind daily for up to 14 days
         reminderType = "overdue";
         urgency = "urgent";
       }
@@ -99,7 +94,7 @@ async function checkDeadlineReminders() {
       const msg = messages[reminderType];
       if (!msg) continue;
 
-      // Notify committee members
+      // Notify ONLY this committee's members (not other committees/events)
       await notifyCommitteeMembers({
         committeeId: committee.id,
         type: `deadline_${reminderType}`,
@@ -109,14 +104,15 @@ async function checkDeadlineReminders() {
         metadata: { committeeId: committee.id, reminderType, daysUntil },
       });
 
-      // Notify directors if overdue
+      // Notify ONLY the director who owns this event (not all directors)
       if (reminderType === "overdue") {
         const chairNames = committee.members
-          .filter((m) => m.role === "chair" || m.role === "co-chair")
+          .filter((m) => m.role === "chair" || m.role === "co-chair" || m.role === "head")
           .map((m) => m.name)
           .join(", ") || "No chair assigned";
 
-        await notifyDirectors({
+        await notifyEventDirector({
+          eventId: committee.event?.id,
           type: "committee_overdue",
           title: `Committee overdue: ${committee.name}`,
           message: `${committee.name} (${committee.event?.title}) proposal is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""} overdue. Chair(s): ${chairNames}.`,
@@ -125,7 +121,7 @@ async function checkDeadlineReminders() {
         });
       }
 
-      console.log(`[Reminders] Sent ${reminderType} for ${committee.name}`);
+      console.log(`[Reminders] Sent ${reminderType} for ${committee.name} (event: ${committee.event?.title})`);
     }
   } catch (err) {
     console.error("[Reminders] Error checking deadlines:", err);
@@ -137,12 +133,8 @@ async function checkDeadlineReminders() {
  * Checks every hour.
  */
 function startDeadlineReminders() {
-  // Run immediately on start
   checkDeadlineReminders();
-
-  // Then check every hour
   const interval = setInterval(checkDeadlineReminders, 60 * 60 * 1000);
-
   console.log("[Reminders] Deadline reminder scheduler started (hourly checks)");
   return interval;
 }

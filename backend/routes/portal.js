@@ -2,7 +2,7 @@ const express = require("express");
 const prisma = require("../services/db");
 const { requireAuth } = require("../middleware/auth");
 const { logActivity } = require("../services/activity");
-const { notifyDirectors } = require("../services/notifications");
+const { notifyEventDirector } = require("../services/notifications");
 
 const router = express.Router();
 router.use(requireAuth);
@@ -248,7 +248,7 @@ router.post("/committee/:id/submit", async (req, res) => {
         eventId: committee.eventId,
         performedBy: req.user.name,
       }),
-      notifyDirectors({
+      notifyEventDirector({ eventId: committee.eventId,
         type: "proposal_submitted",
         title: "New proposal submitted",
         message: `${req.user.name} submitted a proposal for ${committee.name} (${committee.event.title}). Review it in Approvals.`,

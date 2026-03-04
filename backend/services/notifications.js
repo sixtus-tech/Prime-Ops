@@ -8,11 +8,9 @@ function cleanForKc(text) {
 
 /**
  * Send a notification to a user (in-app + KingsChat).
- * @param {{ userId: string, type: string, title: string, message: string, link?: string, metadata?: object }}
  */
 async function notify({ userId, type, title, message, link, metadata, senderUserId }) {
   try {
-    // 1. In-app notification
     await prisma.notification.create({
       data: {
         userId,
@@ -23,8 +21,6 @@ async function notify({ userId, type, title, message, link, metadata, senderUser
         metadata: metadata ? JSON.stringify(metadata) : null,
       },
     });
-
-    // 2. KingsChat message (fire-and-forget)
     const kcMsg = `📋 Prime Ops\n\n${cleanForKc(title)}\n${cleanForKc(message)}`;
     sendKcNotification(userId, kcMsg, senderUserId).catch(() => {});
   } catch (err) {
@@ -34,8 +30,6 @@ async function notify({ userId, type, title, message, link, metadata, senderUser
 
 /**
  * Notify all members of a committee (who have linked user accounts OR KingsChat IDs).
- * In-app notifications go to members with userId.
- * KingsChat messages go to ALL members with kcId (via sendKcToCommittee).
  */
 async function notifyCommitteeMembers({ committeeId, type, title, message, link, metadata, excludeUserId, senderUserId }) {
   try {
@@ -43,12 +37,9 @@ async function notifyCommitteeMembers({ committeeId, type, title, message, link,
       where: { committeeId },
       select: { userId: true, kcId: true },
     });
-
-    // In-app notifications — only for members with a linked User account
     const userIds = members
       .map((m) => m.userId)
       .filter((uid) => uid && uid !== excludeUserId);
-
     for (const uid of userIds) {
       await prisma.notification.create({
         data: {
@@ -61,21 +52,52 @@ async function notifyCommitteeMembers({ committeeId, type, title, message, link,
         },
       });
     }
-
-    // KingsChat messages — reaches members with kcId even without User accounts
     const kcMsg = `📋 Prime Ops\n\n${cleanForKc(title)}\n${cleanForKc(message)}`;
     sendKcToCommittee(committeeId, kcMsg, excludeUserId, senderUserId).catch(() => {});
-
-    // Also send KC messages to members who have kcId on the Member record
-    // but NO linked userId (these are KC-only members not yet registered).
-    // sendKcToCommittee already handles this, so no extra work needed here.
   } catch (err) {
     console.error("Failed to notify committee:", err);
   }
 }
 
 /**
- * Notify all directors.
+ * Notify only the director who owns a specific event.
+ * Falls back to notifyDirectors if no eventId or no createdById.
+ */
+async function notifyEventDirector({ eventId, type, title, message, link, metadata, senderUserId }) {
+  try {
+    let directorId = null;
+
+    if (eventId) {
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { createdById: true },
+      });
+      directorId = event?.createdById;
+    }
+
+    if (directorId) {
+      await prisma.notification.create({
+        data: {
+          userId: directorId,
+          type,
+          title,
+          message,
+          link: link || null,
+          metadata: metadata ? JSON.stringify(metadata) : null,
+        },
+      });
+      const kcMsg = `📋 Prime Ops\n\n${cleanForKc(title)}\n${cleanForKc(message)}`;
+      sendKcNotification(directorId, kcMsg, senderUserId).catch(() => {});
+    } else {
+      await notifyDirectors({ type, title, message, link, metadata, senderUserId });
+    }
+  } catch (err) {
+    console.error("Failed to notify event director:", err);
+  }
+}
+
+/**
+ * Notify all directors. Use notifyEventDirector instead when you know the event.
  */
 async function notifyDirectors({ type, title, message, link, metadata, senderUserId }) {
   try {
@@ -83,8 +105,6 @@ async function notifyDirectors({ type, title, message, link, metadata, senderUse
       where: { role: "director" },
       select: { id: true },
     });
-
-    // In-app notifications
     for (const d of directors) {
       await prisma.notification.create({
         data: {
@@ -97,13 +117,11 @@ async function notifyDirectors({ type, title, message, link, metadata, senderUse
         },
       });
     }
-
-    // KingsChat messages (fire-and-forget)
     const kcMsg = `📋 Prime Ops\n\n${cleanForKc(title)}\n${cleanForKc(message)}`;
-    sendKcToDirectors(kcMsg).catch(() => {});
+    sendKcToDirectors(kcMsg, senderUserId).catch(() => {});
   } catch (err) {
     console.error("Failed to notify directors:", err);
   }
 }
 
-module.exports = { notify, notifyCommitteeMembers, notifyDirectors };
+module.exports = { notify, notifyCommitteeMembers, notifyDirectors, notifyEventDirector };
