@@ -438,7 +438,7 @@ function BulkDeadlineSetter({ eventId, committees, onDone }) {
   return (
     <div className="bg-brand-50/50 border border-brand-200 rounded-xl p-5 mb-6 animate-fade-in">
       <h3 className="font-display text-base text-surface-900 mb-1">Set Committee Due Dates</h3>
-      <p className="text-xs text-surface-500 mb-4">Set proposal submission deadlines for each committee. Members will be notified immediately and receive follow-up reminders at 7 days, 3 days, 1 day, and daily when overdue.</p>
+      <p className="text-xs text-surface-500 mb-4">Set proposal due dates for each committee. Members will be notified immediately and receive follow-up reminders at 7 days, 3 days, 1 day, and daily when overdue.</p>
       <div className="flex items-center gap-2 mb-4 pb-4 border-b border-brand-100">
         <span className="text-xs text-surface-600 font-medium">Apply to all:</span>
         <input type="date" value={sameDate} onChange={(e) => setSameDate(e.target.value)} className="text-xs rounded-lg border border-surface-200 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400" />
@@ -461,7 +461,7 @@ function BulkDeadlineSetter({ eventId, committees, onDone }) {
           ) : saving ? (
             <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />Saving...</>
           ) : (
-            <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>Set Deadlines &amp; Notify Teams</>
+            <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>Set Due Dates &amp; Notify Teams</>
           )}
         </button>
       </div>

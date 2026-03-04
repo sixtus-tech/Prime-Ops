@@ -2,7 +2,7 @@ const prisma = require("./db");
 const { notifyCommitteeMembers, notifyEventDirector } = require("./notifications");
 
 /**
- * Check all committee deadlines and send reminder notifications.
+ * Check all committee due dates and send reminder notifications.
  * Only notifies members of the specific committee and the director who owns the event.
  * KC messages are sent FROM the event's creator, not a random director.
  */
@@ -22,7 +22,7 @@ async function checkDeadlineReminders() {
     });
 
     for (const committee of committees) {
-      const deadline = new Date(committee.proposalDeadline);
+      const dueDate = new Date(committee.proposalDeadline);
 
       // Skip if committee already has a submitted/approved proposal
       const hasSubmitted = committee.proposals.some(
@@ -30,8 +30,8 @@ async function checkDeadlineReminders() {
       );
       if (hasSubmitted) continue;
 
-      // Calculate days until/since deadline
-      const diffMs = deadline.getTime() - now.getTime();
+      // Calculate days until/since due date
+      const diffMs = dueDate.getTime() - now.getTime();
       const daysUntil = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
       // Determine reminder type based on days
@@ -62,19 +62,22 @@ async function checkDeadlineReminders() {
       });
       if (existingReminder) continue;
 
+      const formattedDate = dueDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+      const shortDate = dueDate.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+
       // Build reminder message
       const messages = {
         "7_day_reminder": {
-          title: `📅 7 days until deadline — ${committee.name}`,
-          message: `Your proposal for ${committee.name} (${committee.event?.title}) is due in 7 days on ${deadline.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}. Start working on it if you haven't already!`,
+          title: `📅 7 days until due date — ${committee.name}`,
+          message: `Your proposal for ${committee.name} (${committee.event?.title}) is due in 7 days on ${formattedDate}. Start working on it if you haven't already!`,
         },
         "3_day_reminder": {
           title: `⚠️ 3 days left — ${committee.name}`,
-          message: `Only 3 days until the ${committee.name} proposal is due! Deadline: ${deadline.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}. Please finalize and submit your proposal.`,
+          message: `Only 3 days until the ${committee.name} proposal is due! Due date: ${formattedDate}. Please finalize and submit your proposal.`,
         },
         "1_day_reminder": {
-          title: `🚨 Tomorrow is the deadline — ${committee.name}`,
-          message: `The ${committee.name} proposal is due TOMORROW (${deadline.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}). Submit your proposal today to avoid missing the deadline.`,
+          title: `🚨 Due tomorrow — ${committee.name}`,
+          message: `The ${committee.name} proposal is due TOMORROW (${formattedDate}). Submit your proposal today to stay on track.`,
         },
         "due_today": {
           title: `🔴 Due TODAY — ${committee.name}`,
@@ -82,7 +85,7 @@ async function checkDeadlineReminders() {
         },
         "overdue": {
           title: `❗ OVERDUE (${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""}) — ${committee.name}`,
-          message: `The ${committee.name} proposal was due ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""} ago on ${deadline.toLocaleDateString("en-US", { month: "long", day: "numeric" })}. Please submit as soon as possible.`,
+          message: `The ${committee.name} proposal was due ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""} ago on ${shortDate}. Please submit as soon as possible.`,
         },
       };
 
@@ -124,18 +127,18 @@ async function checkDeadlineReminders() {
       console.log(`[Reminders] Sent ${reminderType} for ${committee.name} (event: ${committee.event?.title})`);
     }
   } catch (err) {
-    console.error("[Reminders] Error checking deadlines:", err);
+    console.error("[Reminders] Error checking due dates:", err);
   }
 }
 
 /**
- * Start the deadline reminder scheduler.
+ * Start the due date reminder scheduler.
  * Checks every hour.
  */
 function startDeadlineReminders() {
   checkDeadlineReminders();
   const interval = setInterval(checkDeadlineReminders, 60 * 60 * 1000);
-  console.log("[Reminders] Deadline reminder scheduler started (hourly checks)");
+  console.log("[Reminders] Due date reminder scheduler started (hourly checks)");
   return interval;
 }
 

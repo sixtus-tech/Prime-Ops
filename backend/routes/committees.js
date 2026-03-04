@@ -213,15 +213,15 @@ router.post("/:id/set-deadline", requireAuth, async (req, res) => {
     await notifyCommitteeMembers({
       committeeId: committee.id,
       type: "deadline_set",
-      title: "Deadline set for your committee",
-      message: `Proposal for ${committee.name} is due by ${deadline.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}. Make sure to submit before the deadline.`,
+      title: "Due date set for your committee",
+      message: `Proposal for ${committee.name} is due by ${deadline.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}. Make sure to submit before the due date.`,
       link: `/portal/committee/${committee.id}`,
       metadata: { committeeId: committee.id, deadline: proposalDeadline },
     });
 
     await logActivity({
       action: "deadline_set",
-      description: `Proposal deadline set for ${committee.name}: ${deadline.toLocaleDateString()}`,
+      description: `Proposal due date set for ${committee.name}: ${deadline.toLocaleDateString()}`,
       eventId: committee.event?.id,
       performedBy: "Director",
     });

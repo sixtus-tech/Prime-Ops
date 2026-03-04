@@ -331,7 +331,7 @@ router.post("/:id/set-deadlines", requireAuth, async (req, res) => {
     // Fire-and-forget: notifications + activity log
     logActivity({
       action: "deadlines_set",
-      description: `Deadlines set for ${results.length} committees`,
+      description: `Due dates set for ${results.length} committees`,
       eventId: event.id,
       performedBy: "Director",
     }).catch(() => {});
@@ -342,7 +342,7 @@ router.post("/:id/set-deadlines", requireAuth, async (req, res) => {
       notifyCommitteeMembers({
         committeeId: d.committeeId,
         type: "deadline_set",
-        title: "Deadline set for your committee",
+        title: "Due date set for your committee",
         message: `Your committee proposal is due by ${deadline.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}.`,
         link: `/portal/committee/${d.committeeId}`,
         metadata: { committeeId: d.committeeId, deadline: d.proposalDeadline },
