@@ -5,79 +5,105 @@ import { useState, useRef, useCallback, useEffect } from "react";
 export default function VoiceRecorder({ eventType, onVoiceGenerate }) {
   const [recording, setRecording] = useState(false);
   const [duration, setDuration] = useState(0);
-  const [audioBlob, setAudioBlob] = useState(null);
+  const [transcript, setTranscript] = useState("");
   const [permissionDenied, setPermissionDenied] = useState(false);
+  const [unsupported, setUnsupported] = useState(false);
 
-  const mediaRecorderRef = useRef(null);
-  const chunksRef = useRef([]);
+  const recognitionRef = useRef(null);
   const timerRef = useRef(null);
-  const streamRef = useRef(null);
+  const transcriptRef = useRef("");
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((t) => t.stop());
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
       }
     };
   }, []);
 
   const startRecording = useCallback(async () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setUnsupported(true);
+      return;
+    }
+
+    // Request mic permission first
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
+      stream.getTracks().forEach((t) => t.stop());
       setPermissionDenied(false);
-
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-          ? "audio/webm;codecs=opus"
-          : "audio/webm",
-      });
-
-      chunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        setAudioBlob(blob);
-        stream.getTracks().forEach((t) => t.stop());
-      };
-
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start(250); // Collect data every 250ms
-      setRecording(true);
-      setDuration(0);
-      setAudioBlob(null);
-
-      timerRef.current = setInterval(() => {
-        setDuration((d) => d + 1);
-      }, 1000);
-    } catch (err) {
-      console.error("Mic access error:", err);
+    } catch {
       setPermissionDenied(true);
+      return;
     }
-  }, []);
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    let finalTranscript = "";
+
+    recognition.onresult = (event) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const t = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += t + " ";
+        } else {
+          interim = t;
+        }
+      }
+      transcriptRef.current = finalTranscript + interim;
+      setTranscript(transcriptRef.current);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      if (event.error === "not-allowed") {
+        setPermissionDenied(true);
+      }
+    };
+
+    recognition.onend = () => {
+      // Speech recognition can auto-stop; restart if still recording
+      if (recording) {
+        try { recognition.start(); } catch {}
+      }
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setRecording(true);
+    setDuration(0);
+    setTranscript("");
+    transcriptRef.current = "";
+
+    timerRef.current = setInterval(() => {
+      setDuration((d) => d + 1);
+    }, 1000);
+  }, [recording]);
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current?.state === "recording") {
-      mediaRecorderRef.current.stop();
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch {}
     }
     if (timerRef.current) clearInterval(timerRef.current);
     setRecording(false);
   }, []);
 
   const handleGenerate = () => {
-    if (audioBlob) {
-      onVoiceGenerate(audioBlob, eventType);
+    const text = transcriptRef.current.trim();
+    if (text) {
+      onVoiceGenerate(text, eventType);
     }
   };
 
   const handleReset = () => {
-    setAudioBlob(null);
+    setTranscript("");
+    transcriptRef.current = "";
     setDuration(0);
   };
 
@@ -87,20 +113,28 @@ export default function VoiceRecorder({ eventType, onVoiceGenerate }) {
     return `${m}:${sec.toString().padStart(2, "0")}`;
   };
 
+  if (unsupported) {
+    return (
+      <div className="text-center py-8">
+        <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-4">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
+        <p className="text-surface-700 font-medium">Voice input not supported</p>
+        <p className="text-surface-400 text-sm mt-1">
+          Your browser doesn&apos;t support speech recognition. Please use Chrome or Edge, or type your idea instead.
+        </p>
+      </div>
+    );
+  }
+
   if (permissionDenied) {
     return (
       <div className="text-center py-8">
         <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#ef4444"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="1" y1="1" x2="23" y2="23" />
             <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V5a3 3 0 0 0-5.94-.6" />
             <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2c0 .84-.15 1.65-.42 2.4" />
@@ -111,10 +145,7 @@ export default function VoiceRecorder({ eventType, onVoiceGenerate }) {
         <p className="text-surface-400 text-sm mt-1">
           Please allow microphone access in your browser settings and try again.
         </p>
-        <button
-          onClick={startRecording}
-          className="mt-4 text-brand-500 hover:text-brand-600 text-sm font-medium"
-        >
+        <button onClick={startRecording} className="mt-4 text-brand-500 hover:text-brand-600 text-sm font-medium">
           Try again
         </button>
       </div>
@@ -133,26 +164,15 @@ export default function VoiceRecorder({ eventType, onVoiceGenerate }) {
           className={`relative z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95 ${
             recording
               ? "bg-red-500 hover:bg-red-600 recording-pulse"
-              : audioBlob
+              : transcript
               ? "bg-surface-800 hover:bg-surface-700"
               : "bg-brand-500 hover:bg-brand-600"
           }`}
         >
           {recording ? (
-            /* Stop icon */
             <div className="w-6 h-6 bg-white rounded-sm" />
           ) : (
-            /* Mic icon */
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
               <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
               <line x1="12" x2="12" y1="19" y2="22" />
@@ -183,38 +203,37 @@ export default function VoiceRecorder({ eventType, onVoiceGenerate }) {
         </div>
       )}
 
-      {!recording && !audioBlob && (
+      {/* Live transcript while recording */}
+      {recording && transcript && (
+        <div className="w-full max-w-sm bg-surface-50 rounded-xl p-3 mb-4 animate-fade-in">
+          <p className="text-surface-600 text-sm italic">&ldquo;{transcript}&rdquo;</p>
+        </div>
+      )}
+
+      {!recording && !transcript && (
         <p className="text-surface-400 text-sm">
-          Tap the microphone and describe your event
+          Tap the microphone and describe your project
         </p>
       )}
 
       {/* After recording */}
-      {!recording && audioBlob && (
+      {!recording && transcript && (
         <div className="animate-fade-in w-full max-w-sm">
-          <div className="bg-surface-100 rounded-xl p-4 flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#22c55e"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+          <div className="bg-surface-100 rounded-xl p-4 mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-surface-700 font-medium text-sm">Recording captured</p>
+                <p className="text-surface-400 text-xs">{formatTime(duration)}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-surface-700 font-medium text-sm">
-                Recording captured
-              </p>
-              <p className="text-surface-400 text-xs">
-                {formatTime(duration)} — ready to generate
-              </p>
-            </div>
+            <p className="text-surface-600 text-sm mt-2 border-t border-surface-200 pt-2">
+              &ldquo;{transcript}&rdquo;
+            </p>
           </div>
 
           <div className="flex gap-2">
@@ -228,16 +247,7 @@ export default function VoiceRecorder({ eventType, onVoiceGenerate }) {
               onClick={handleGenerate}
               className="flex-1 bg-brand-500 hover:bg-brand-600 text-white font-medium py-3 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 text-sm"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
               </svg>
               Generate
