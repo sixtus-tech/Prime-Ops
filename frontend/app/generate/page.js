@@ -39,18 +39,31 @@ export default function GeneratePage() {
       setLoading(false);
     }
   }
-
-  async function handleVoiceGenerate(transcript) {
+  async function handleVoiceGenerate(audioBlob, voiceEventType) {
     setLoading(true);
     setError("");
     try {
+      // Step 1: Transcribe the audio
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "recording.webm");
+      const transcribeRes = await fetch(`${API}/proposals/transcribe`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const transcribeData = await transcribeRes.json();
+      if (!transcribeRes.ok) throw new Error(transcribeData.error || "Transcription failed");
+      const transcript = transcribeData.transcript || transcribeData.text;
+      if (!transcript) throw new Error("Could not transcribe audio. Please try again or type your idea.");
+
+      // Step 2: Generate proposal from transcript
       const res = await fetch(`${API}/proposals/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ inputText: transcript, inputType: "voice" }),
+        body: JSON.stringify({ inputText: transcript, inputType: "voice", eventType: voiceEventType }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Generation failed");
