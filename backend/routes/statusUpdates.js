@@ -368,7 +368,7 @@ router.post("/submit", async (req, res) => {
             title: `Milestone approval needed`,
             message: `${committee.name} has completed ${pendingApprovals.length} critical milestone(s) requiring review: ${pendingApprovals.map((p) => `"${p.title}"`).join(", ")}`,
             link: `/portal/committee/${committeeId}`,
-            metadata: { committeeId, statusUpdateId: update.id, pendingSubMilestones: pendingApprovals.map((p) => p.subMilestoneId) },
+            metadata: { committeeId, statusUpdateId: update.id, pendingSubMilestones: pendingApprovals.map((p) => p.subMilestoneId) }, senderUserId: req.user?.id,
           });
         }
       }
@@ -395,7 +395,7 @@ router.post("/submit", async (req, res) => {
       title: `Status update: ${committee.name}`,
       message: `${req.user.name} submitted a status update for ${committee.name}.`,
       link: `/portal/committee/${committeeId}`,
-      metadata: { statusUpdateId: update.id, committeeId },
+      metadata: { statusUpdateId: update.id, committeeId }, senderUserId: req.user?.id,
     });
 
     await logActivity({
@@ -487,8 +487,8 @@ router.post("/generate", mediaUpload.array("media", 10), async (req, res) => {
     try { milestoneMatches = await matchStatusUpdateToMilestones(update.id); } catch {}
     if (update.subMilestoneId) { try { const sub = await prisma.subMilestone.findUnique({ where: { id: update.subMilestoneId } }); if (sub?.status === "not_started") await prisma.subMilestone.update({ where: { id: update.subMilestoneId }, data: { status: "in_progress" } }); } catch {} }
 
-    await notifyCommitteeHeads({ committeeId, type: "status_update_submitted", title: `Status update: ${committee.name}`, message: `${req.user.name} submitted a status update for ${committee.name}.`, link: `/portal/committee/${committeeId}`, metadata: { statusUpdateId: update.id, committeeId } });
-    await notifyDirectors({ type: "status_update_submitted", title: `📊 Status update: ${committee.name}`, message: `${req.user.name} submitted a status update for ${committee.name}.`, link: `/updates`, metadata: { statusUpdateId: update.id, committeeId } });
+    await notifyCommitteeHeads({ committeeId, type: "status_update_submitted", title: `Status update: ${committee.name}`, message: `${req.user.name} submitted a status update for ${committee.name}.`, link: `/portal/committee/${committeeId}`, metadata: { statusUpdateId: update.id, committeeId }, senderUserId: req.user?.id });
+    await notifyDirectors({ type: "status_update_submitted", title: `📊 Status update: ${committee.name}`, message: `${req.user.name} submitted a status update for ${committee.name}.`, link: `/updates`, metadata: { statusUpdateId: update.id, committeeId }, senderUserId: req.user?.id });
     await logActivity({ action: "status_update", description: `${req.user.name} submitted status update for ${committee.name}`, eventId: committee.event?.id, performedBy: req.user.name });
 
     res.status(201).json({ update: { ...update, ...aiResult, media: storageUploads }, milestoneMatches: milestoneMatches.length > 0 ? milestoneMatches : undefined });

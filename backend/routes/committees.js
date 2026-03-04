@@ -418,7 +418,7 @@ router.post("/:id/members", requireAuth, async (req, res) => {
 
 
 
-      sendKcMessageToKcId(memberKcId, kcMessage)
+      sendKcMessageToKcId(memberKcId, kcMessage, req.user?.id)
         .then((sent) => {
           if (sent) {
             console.log(`[KC] Appointment notification sent to kcId ${memberKcId}`);

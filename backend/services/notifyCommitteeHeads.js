@@ -9,7 +9,7 @@ function cleanForKc(text) {
 /**
  * Notify all heads of a specific committee (in-app + KingsChat)
  */
-async function notifyCommitteeHeads({ committeeId, type, title, message, link, metadata }) {
+async function notifyCommitteeHeads({ committeeId, type, title, message, link, metadata, senderUserId }) {
   try {
     const heads = await prisma.member.findMany({
       where: {
@@ -36,7 +36,7 @@ async function notifyCommitteeHeads({ committeeId, type, title, message, link, m
     // KingsChat messages (fire-and-forget)
     const kcMsg = `📋 Prime Ops\n\n${cleanForKc(title)}\n${cleanForKc(message)}`;
     for (const h of heads) {
-      sendKcNotification(h.userId, kcMsg).catch(() => {});
+      sendKcNotification(h.userId, kcMsg, senderUserId).catch(() => {});
     }
 
     return heads.length;
