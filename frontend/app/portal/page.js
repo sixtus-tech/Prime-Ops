@@ -87,7 +87,7 @@ export default function PortalPage() {
                           c.memberRole === "co-chair" ? "bg-blue-100 text-blue-700" :
                           "bg-gray-100 text-gray-600"
                         }`}>
-                          {c.memberRole}
+                          {{ chair: "Team Lead", "co-chair": "Co-Team Lead", member: "Team Member", head: "Team Lead" }[c.memberRole] || c.memberRole}
                         </span>
                       </div>
                       <p className="text-sm text-surface-500">

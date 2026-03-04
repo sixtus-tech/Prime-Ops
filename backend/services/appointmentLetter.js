@@ -130,17 +130,17 @@ async function generateAppointmentLetter({
 
       if (role === "chair" || role === "head") {
         doc.text(
-          "As the Committee Chair, you will lead the committee's efforts, coordinate with other committee chairs, and ensure all responsibilities are fulfilled on time. You are the primary point of contact for this committee.",
+          "As the Team Lead, you will lead the committee's efforts, coordinate with other team leads, and ensure all responsibilities are fulfilled on time. You are the primary point of contact for this committee.",
           { lineGap: 3 }
         );
       } else if (role === "co-chair") {
         doc.text(
-          "As Co-Chair, you will work closely with the Chair to oversee the committee's activities, step in when needed, and help ensure all responsibilities are completed effectively and on time.",
+          "As Co-Team Lead, you will work closely with the Team Lead to oversee the committee's activities, step in when needed, and help ensure all responsibilities are completed effectively and on time.",
           { lineGap: 3 }
         );
       } else {
         doc.text(
-          "As a committee member, your contributions will be vital to the success of this project. We trust your expertise and look forward to your active participation in all committee activities.",
+          "As a team member, your contributions will be vital to the success of this project. We trust your expertise and look forward to your active participation in all committee activities.",
           { lineGap: 3 }
         );
       }
@@ -207,11 +207,11 @@ function formatRole(role) {
   switch (role) {
     case "chair":
     case "head":
-      return "Committee Chair";
+      return "Team Lead";
     case "co-chair":
-      return "Committee Co-Chair";
+      return "Co-Team Lead";
     default:
-      return "Committee Member";
+      return "Team Member";
   }
 }
 

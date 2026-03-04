@@ -242,7 +242,7 @@ export default function CommitteeDetailPage() {
   // ── Role helpers ───────────────────────────────────────────────────
   const isChair = memberRole === "chair" || memberRole === "co-chair" || memberRole === "head" || user?.role === "director";
   const isMember = !isChair;
-  const roleLabel = memberRole === "chair" ? "Committee Head" : memberRole === "co-chair" ? "Co-Chair" : "Member";
+  const roleLabel = memberRole === "chair" ? "Team Lead" : memberRole === "co-chair" ? "Co-Team Lead" : "Team Member";
 
   // ── Build committee context for AI generation ──────────────────
   function buildCommitteeContext() {
@@ -513,7 +513,7 @@ export default function CommitteeDetailPage() {
               <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
             </svg>
             <p className="text-xs text-blue-700">
-              You&apos;re viewing as a <strong>committee member</strong>. You can view proposals, milestones, and updates, and leave comments on proposals. Committee heads manage submissions and milestones.
+              You&apos;re viewing as a <strong>team member</strong>. You can view proposals, milestones, and updates, and leave comments on proposals. Committee heads manage submissions and milestones.
             </p>
           </div>
         )}
@@ -1267,7 +1267,7 @@ export default function CommitteeDetailPage() {
             {/* Add member form — chair only */}
             {isChair && (
               <div className="bg-white rounded-xl border border-surface-200 p-6">
-                <h3 className="font-display text-lg text-surface-900 mb-4">Add Committee Member</h3>
+                <h3 className="font-display text-lg text-surface-900 mb-4">Add Team Member</h3>
                 <form onSubmit={handleAddMember} className="space-y-4">
                   {/* KingsChat Username */}
                   <div>
@@ -1391,7 +1391,7 @@ export default function CommitteeDetailPage() {
                         className="w-full rounded-xl border border-surface-200 px-4 py-3 text-sm text-surface-900 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400"
                       >
                         <option value="member">Member</option>
-                        <option value="co-chair">Co-Chair</option>
+                        <option value="co-chair">Co-Team Lead</option>
                       </select>
                     </div>
                   </div>
@@ -1408,7 +1408,7 @@ export default function CommitteeDetailPage() {
 
             <div className="bg-white rounded-xl border border-surface-200 p-6">
               <h3 className="font-display text-lg text-surface-900 mb-4">
-                Committee Members ({committee.members?.length || 0})
+                Team Members ({committee.members?.length || 0})
               </h3>
               {committee.members?.length === 0 ? (
                 <p className="text-surface-500 text-sm">No members yet.</p>

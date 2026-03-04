@@ -355,7 +355,7 @@ router.post("/:id/members", requireAuth, async (req, res) => {
     const portalLink = `${frontendUrl}/portal/committee/${committee.id}`;
 
     const roleLabel =
-      role === "chair" ? "Committee Chair" : role === "co-chair" ? "Committee Co-Chair" : "Committee Member";
+      role === "chair" ? "Team Lead" : role === "co-chair" ? "Co-Team Lead" : "Team Member";
 
     // Format event date
     let eventDateStr = null;

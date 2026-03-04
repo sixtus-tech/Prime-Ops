@@ -94,7 +94,7 @@ export default function PortalLoginPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-white">Prime Ops</h1>
-          <p className="text-blue-300 mt-1">Committee Member Portal</p>
+          <p className="text-blue-300 mt-1">Team Member Portal</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-2xl p-8">

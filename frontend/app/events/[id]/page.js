@@ -41,6 +41,7 @@ const STATUS_COLORS = {
   cancelled: "bg-red-100 text-red-600",
 };
 const ROLES = ["chair", "co-chair", "member"];
+const ROLE_LABELS = { chair: "Team Lead", "co-chair": "Co-Team Lead", member: "Team Member" };
 
 // ─── AddMemberForm ───────────────────────────────────────────────────
 function AddMemberForm({ committeeId, onAdded }) {
@@ -160,7 +161,7 @@ function AddMemberForm({ committeeId, onAdded }) {
         <input type="tel" placeholder="Phone" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className="text-sm rounded-lg border border-surface-200 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-400" />
       </div>
       <select value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} className="w-full text-sm rounded-lg border border-surface-200 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-400">
-        {ROLES.map((r) => (<option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>))}
+        {ROLES.map((r) => (<option key={r} value={r}>{ROLE_LABELS[r]}</option>))}
       </select>
       <div className="flex gap-2">
         <button type="submit" disabled={saving} className="flex-1 bg-brand-500 text-white text-sm py-2 rounded-lg hover:bg-brand-600 disabled:opacity-50 font-medium transition-all">{saving ? "Adding..." : "Add Member"}</button>
@@ -286,7 +287,7 @@ function CommitteeCard({ committee, onUpdate, onDelete, eventStartDate }) {
                   {m.email && <p className="text-[11px] text-surface-400 truncate">{m.email}</p>}
                 </div>
                 <select value={m.role} onChange={(e) => handleRoleChange(m.id, e.target.value)} className={`text-[10px] font-medium px-2 py-0.5 rounded-full border-0 cursor-pointer ${ROLE_BADGE[m.role]}`}>
-                  {ROLES.map((r) => (<option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>))}
+                  {ROLES.map((r) => (<option key={r} value={r}>{ROLE_LABELS[r]}</option>))}
                 </select>
                 <button onClick={() => handleRemoveMember(m.id)} className="opacity-0 group-hover:opacity-100 text-surface-300 hover:text-red-500 transition-all p-1">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>

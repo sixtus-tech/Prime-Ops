@@ -197,7 +197,7 @@ export default function TasksPanel({ eventId, committeeId, isChair }) {
       {/* Active tasks */}
       {pending.length === 0 && completed.length === 0 ? (
         <div className="text-center py-10 text-surface-400 text-sm">
-          No tasks yet. {isChair ? "Click \"Auto-create tasks\" to get started." : "Your committee chair will assign tasks."}
+          No tasks yet. {isChair ? "Click \"Auto-create tasks\" to get started." : "Your team lead will assign tasks."}
         </div>
       ) : (
         <div className="space-y-2">

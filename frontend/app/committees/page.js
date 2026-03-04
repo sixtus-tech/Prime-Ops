@@ -105,7 +105,7 @@ export default function CommitteesPage() {
             <p className="text-2xl font-display text-white">{totalMembers}</p>
           </div>
           <div>
-            <p className="text-white/60 text-xs">Committee Chairs</p>
+            <p className="text-white/60 text-xs">Team Leads</p>
             <p className="text-2xl font-display text-white">{totalChairs}</p>
           </div>
           <div>
@@ -172,7 +172,7 @@ export default function CommitteesPage() {
                         {chairCount > 0 && (
                           <span className="flex items-center gap-1">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                            {chairCount} chair{chairCount !== 1 ? "s" : ""}
+                            {chairCount} lead{chairCount !== 1 ? "s" : ""}
                           </span>
                         )}
                       </div>

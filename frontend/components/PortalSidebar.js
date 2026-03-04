@@ -24,7 +24,7 @@ export default function PortalSidebar() {
   }, [user]);
 
   const isHead = memberRoles.includes("head");
-  const roleLabel = isHead ? "Committee Head" : "Committee Member";
+  const roleLabel = isHead ? "Team Lead" : "Team Member";
 
   const navItems = [
     {
