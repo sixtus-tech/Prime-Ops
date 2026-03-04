@@ -27,7 +27,7 @@ export default function MyProposalsPage() {
   return (
     <main className="min-h-screen">
       <div className="bg-brand-600 text-white px-6 lg:px-10 py-10">
-        <h1 className="font-display text-3xl">My Proposals</h1>
+        <h1 className="font-display text-3xl">My Workplans</h1>
         <p className="mt-2 text-white/70">All proposals across your committees.</p>
       </div>
 
