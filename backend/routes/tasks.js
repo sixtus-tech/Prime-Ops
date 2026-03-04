@@ -205,7 +205,7 @@ router.post("/auto-create", async (req, res) => {
     const tasksToCreate = [
       {
         title: `Submit ${committee.name} Proposal`,
-        description: `Create and submit the committee proposal for review by the Program Director.`,
+        description: `Create and submit the committee proposal for review by the Project Director.`,
         type: "proposal_submission",
         priority: "high",
         dueDate: deadline || null,

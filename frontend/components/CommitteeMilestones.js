@@ -274,7 +274,7 @@ export default function CommitteeMilestones({ committeeId, isChair }) {
           <div>
             <p className="text-xs text-blue-800 font-medium">How milestones work</p>
             <p className="text-xs text-blue-600 mt-0.5">
-              Check off milestones as your team completes them. Items marked "Requires Approval" will be sent to the Program Director for verification before being marked complete.
+              Check off milestones as your team completes them. Items marked "Requires Approval" will be sent to the Project Director for verification before being marked complete.
             </p>
           </div>
         </div>

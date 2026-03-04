@@ -405,7 +405,7 @@ router.post("/:id/broadcast", requireAuth, async (req, res) => {
           await notify({
             userId: member.userId,
             type: "director_broadcast",
-            title: subject || "Alert from Program Director",
+            title: subject || "Alert from Project Director",
             message,
             link: "/portal",
             metadata: { eventId: event.id, urgency: urgency || "normal" },

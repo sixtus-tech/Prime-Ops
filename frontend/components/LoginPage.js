@@ -70,7 +70,7 @@ export default function LoginPage() {
           <p className="text-surface-500 text-sm mb-6">
             {mode === "login"
               ? "Sign in to access your projects and committees."
-              : "The first account created becomes the Program Director."}
+              : "The first account created becomes the Project Director."}
           </p>
 
           {error && (

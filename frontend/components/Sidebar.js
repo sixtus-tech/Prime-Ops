@@ -138,7 +138,7 @@ export default function Sidebar() {
               </div>
             </div>
             <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-brand-50 text-brand-600 font-semibold">
-              Program Director
+              Project Director
             </span>
           </div>
         )}

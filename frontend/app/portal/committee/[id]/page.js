@@ -325,7 +325,7 @@ export default function CommitteeDetailPage() {
 
   // ── Submit proposal for director review ─────────────────────────
   async function handleSubmit(proposalId) {
-    if (!confirm("Submit this proposal to the Program Director for review?")) return;
+    if (!confirm("Submit this proposal to the Project Director for review?")) return;
     setSubmitting(true);
     try {
       await authFetch(`/portal/committee/${id}/submit`, {
@@ -655,7 +655,7 @@ export default function CommitteeDetailPage() {
                             {p.status === "approved" && (
                               <div className="bg-green-50 px-4 py-3 border-b border-green-100 flex items-center gap-2">
                                 <span className="text-green-600">✅</span>
-                                <span className="text-sm font-medium text-green-800">Approved by Program Director</span>
+                                <span className="text-sm font-medium text-green-800">Approved by Project Director</span>
                               </div>
                             )}
                             <div className="p-5 max-h-[500px] overflow-y-auto">
@@ -693,7 +693,7 @@ export default function CommitteeDetailPage() {
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                       <line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
                                     </svg>
-                                    {submitting ? "Submitting..." : "Submit to Program Director"}
+                                    {submitting ? "Submitting..." : "Submit to Project Director"}
                                   </button>
                                 )}
                                 {p.status === "revision_requested" && (
@@ -796,7 +796,7 @@ export default function CommitteeDetailPage() {
                                 {p.status === "approved" && (
                                   <div className="bg-green-50 px-4 py-3 border-b border-green-100 flex items-center gap-2">
                                     <span className="text-green-600">✅</span>
-                                    <span className="text-sm font-medium text-green-800">Approved by Program Director</span>
+                                    <span className="text-sm font-medium text-green-800">Approved by Project Director</span>
                                   </div>
                                 )}
                                 <div className="p-5 max-h-[500px] overflow-y-auto">
@@ -913,7 +913,7 @@ export default function CommitteeDetailPage() {
                           disabled={submitting}
                           className="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-6 py-2.5 rounded-xl transition-all"
                         >
-                          {submitting ? "Submitting..." : "Submit to Program Director"}
+                          {submitting ? "Submitting..." : "Submit to Project Director"}
                         </button>
                       </div>
                     )}
@@ -1031,7 +1031,7 @@ export default function CommitteeDetailPage() {
                                   {p.status === "approved" && (
                                     <div className="bg-green-50 px-4 py-3 border-b border-green-100 flex items-center gap-2">
                                       <span className="text-green-600">✅</span>
-                                      <span className="text-sm font-medium text-green-800">Approved by Program Director</span>
+                                      <span className="text-sm font-medium text-green-800">Approved by Project Director</span>
                                     </div>
                                   )}
                                   <div className="p-5 max-h-[500px] overflow-y-auto">
@@ -1224,7 +1224,7 @@ export default function CommitteeDetailPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
                 <div className="text-3xl mb-2">⏳</div>
                 <p className="text-sm font-medium text-blue-900">Proposal pending approval</p>
-                <p className="text-xs text-blue-600 mt-1">You can submit status updates once your proposal is approved by the Program Director.</p>
+                <p className="text-xs text-blue-600 mt-1">You can submit status updates once your proposal is approved by the Project Director.</p>
               </div>
             ) : (
               <div className="bg-surface-50 border border-surface-200 rounded-xl p-6 text-center">

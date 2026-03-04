@@ -27,7 +27,7 @@ Generate a comprehensive, actionable **committee proposal / work plan** for the 
 
 This is NOT a general event proposal. This is a FOCUSED plan for what THIS SPECIFIC COMMITTEE needs to do, buy, organize, and deliver for the event.
 
-## EVENT CONTEXT (already decided by the Program Director)
+## EVENT CONTEXT (already decided by the Project Director)
 - **Event:** ${eventTitle}
 - **Event Type:** ${eventType}
 ${eventDates ? `- **Event Dates:** ${eventDates}` : ""}

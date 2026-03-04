@@ -31,7 +31,7 @@ async function processScheduledBroadcasts() {
             await notify({
               userId: member.userId,
               type: "director_broadcast",
-              title: broadcast.subject || "Alert from Program Director",
+              title: broadcast.subject || "Alert from Project Director",
               message: broadcast.message,
               link: "/portal",
               metadata: { eventId: broadcast.eventId, urgency: broadcast.urgency },

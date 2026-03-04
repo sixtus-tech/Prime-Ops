@@ -252,8 +252,8 @@ router.post("/:id/send-reminder", requireAuth, async (req, res) => {
     await notifyCommitteeMembers({
       committeeId: committee.id,
       type: "deadline_manual_reminder",
-      title: `Reminder from Program Director — ${committee.name}`,
-      message: `The Program Director is following up on the ${committee.name} proposal for ${committee.event?.title}. Due date: ${deadlineStr}. Please submit your proposal as soon as possible.`,
+      title: `Reminder from Project Director — ${committee.name}`,
+      message: `The Project Director is following up on the ${committee.name} proposal for ${committee.event?.title}. Due date: ${deadlineStr}. Please submit your proposal as soon as possible.`,
       link: `/portal/committee/${committee.id}`,
       metadata: { committeeId: committee.id, manual: true },
     });
