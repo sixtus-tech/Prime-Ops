@@ -205,7 +205,7 @@ router.post("/committee/:id/submit", async (req, res) => {
       }),
       prisma.committee.findUnique({
         where: { id: req.params.id },
-        include: { event: { select: { id: true, title: true } } },
+        include: { event: { select: { id: true, title: true, createdById: true } } },
       }),
     ]);
 
@@ -341,7 +341,7 @@ router.get("/proposals/:id", async (req, res) => {
       where: { id: req.params.id },
       include: {
         committee: { select: { id: true, name: true } },
-        event: { select: { id: true, title: true, eventType: true } },
+        event: { select: { id: true, title: true, eventType: true, createdById: true } },
       },
     });
 
@@ -385,7 +385,7 @@ router.get("/proposals", async (req, res) => {
       where: { committeeId: { in: committeeIds } },
       include: {
         committee: { select: { id: true, name: true } },
-        event: { select: { id: true, title: true } },
+        event: { select: { id: true, title: true, createdById: true } },
       },
       orderBy: { createdAt: "desc" },
     });
