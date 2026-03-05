@@ -74,7 +74,8 @@ router.get("/committee/:id", async (req, res) => {
       }),
     ]);
 
-    if (!membership && req.user.role !== "director") {
+    const isEventOwner = req.user.role === "director" && committee?.event?.createdById === req.user.id;
+    if (!membership && !isEventOwner) {
       return res.status(403).json({ error: "You are not a member of this committee." });
     }
     if (!committee) {
@@ -349,7 +350,7 @@ router.get("/proposals/:id", async (req, res) => {
       return res.status(404).json({ error: "Proposal not found." });
     }
 
-    if (proposal.committeeId && req.user.role !== "director") {
+    if (proposal.committeeId && !(req.user.role === "director" && proposal.event?.createdById === req.user.id)) {
       const membership = await prisma.member.findFirst({
         where: { committeeId: proposal.committeeId, userId: req.user.id },
       });
@@ -416,7 +417,8 @@ router.get("/committee/:id/proposals/:proposalId/comments", async (req, res) => 
       }),
     ]);
 
-    if (!member && req.user.role !== "director") {
+    const cmtCheck1 = await prisma.committee.findUnique({ where: { id: req.params.id }, select: { event: { select: { createdById: true } } } });
+    if (!member && !(req.user.role === "director" && cmtCheck1?.event?.createdById === req.user.id)) {
       return res.status(403).json({ error: "Not a member of this committee." });
     }
 
@@ -448,7 +450,8 @@ router.post("/committee/:id/proposals/:proposalId/comments", async (req, res) =>
       }),
     ]);
 
-    if (!member && req.user.role !== "director") {
+    const cmtCheck2 = await prisma.committee.findUnique({ where: { id: req.params.id }, select: { event: { select: { createdById: true } } } });
+    if (!member && !(req.user.role === "director" && cmtCheck2?.event?.createdById === req.user.id)) {
       return res.status(403).json({ error: "Not a member of this committee." });
     }
     if (!proposal) {
