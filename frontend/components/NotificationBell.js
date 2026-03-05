@@ -71,7 +71,7 @@ export default function NotificationBell() {
 
   async function markAllRead() {
     try {
-      await authFetch("/notifications/mark-read", { method: "POST" });
+      await authFetch("/notifications/read-all", { method: "PUT" });
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch {}
@@ -80,7 +80,7 @@ export default function NotificationBell() {
   async function handleClick(notification) {
     if (!notification.read) {
       try {
-        await authFetch(`/notifications/${notification.id}/read`, { method: "POST" });
+        await authFetch(`/notifications/${notification.id}/read`, { method: "PUT" });
         setNotifications((prev) =>
           prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
         );
