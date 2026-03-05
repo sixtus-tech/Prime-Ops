@@ -240,8 +240,8 @@ export default function CommitteeDetailPage() {
   }, [activeTab]);
 
   // ── Role helpers ───────────────────────────────────────────────────
-  const isEventOwner = user?.role === "director" && committee?.event?.createdById === user?.id;
-  const isChair = memberRole === "chair" || memberRole === "co-chair" || memberRole === "head" || isEventOwner;
+  
+  const isChair = memberRole === "chair" || memberRole === "co-chair" || memberRole === "head";
   const isMember = !isChair;
   const roleLabel = memberRole === "chair" ? "Team Lead" : memberRole === "co-chair" ? "Co-Team Lead" : "Team Member";
 
