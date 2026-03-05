@@ -2,13 +2,31 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../lib/auth";
 
+// Notification types relevant to each context
+const DIRECTOR_TYPES = [
+  "proposal_submitted", "proposal_submission", "committee_overdue",
+  "status_update_submitted", "status_update", "director_broadcast",
+  "budget_review", "general",
+];
+
+const PORTAL_TYPES = [
+  "committee_appointment", "committee_added", "deadline_set",
+  "deadline_7_day_reminder", "deadline_3_day_reminder",
+  "deadline_1_day_reminder", "deadline_due_today", "deadline_overdue",
+  "deadline_manual_reminder", "task_assigned", "role_changed",
+  "proposal_comment", "milestone", "director_broadcast",
+  "commented", "general",
+];
+
 export default function NotificationBell() {
   const { authFetch, isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Detect context from URL
+  const isPortal = typeof window !== "undefined" && window.location.pathname.startsWith("/portal");
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -27,12 +45,27 @@ export default function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  function filterByContext(items) {
+    const allowedTypes = isPortal ? PORTAL_TYPES : DIRECTOR_TYPES;
+    return items.filter((n) => {
+      // Match exact type
+      if (allowedTypes.includes(n.type)) return true;
+      // Handle deadline subtypes like "deadline_7_day_reminder"
+      if (isPortal && n.type?.startsWith("deadline_")) return true;
+      // Fall back to link-based filtering
+      if (isPortal && n.link?.startsWith("/portal")) return true;
+      if (!isPortal && n.link && !n.link.startsWith("/portal")) return true;
+      return false;
+    });
+  }
+
   async function fetchNotifications() {
     try {
       const data = await authFetch("/notifications");
       const items = Array.isArray(data) ? data : data.notifications || [];
-      setNotifications(items.slice(0, 20));
-      setUnreadCount(items.filter((n) => !n.read).length);
+      const filtered = filterByContext(items);
+      setNotifications(filtered.slice(0, 20));
+      setUnreadCount(filtered.filter((n) => !n.read).length);
     } catch {}
   }
 
