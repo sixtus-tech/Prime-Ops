@@ -127,7 +127,7 @@ router.post("/committee/:id/proposal", async (req, res) => {
 
     logActivity({
       action: "proposal_generated",
-      description: `${req.user.name} created a proposal for ${committee.name}`,
+      description: `${req.user.name} created a workplan for ${committee.name}`,
       eventId: committee.eventId,
       performedBy: req.user.name,
     }).catch(() => {});
@@ -181,7 +181,7 @@ router.patch("/committee/:id/proposals/:proposalId", async (req, res) => {
 
     logActivity({
       action: "proposal_edited",
-      description: `${req.user.name} edited a proposal`,
+      description: `${req.user.name} edited a workplan`,
       eventId: proposal.eventId,
       performedBy: req.user.name,
     }).catch(() => {});
@@ -223,8 +223,8 @@ router.post("/committee/:id/submit", async (req, res) => {
         data: {
           eventId: committee.eventId,
           committeeId: committee.id,
-          title: `${committee.name} Proposal — ${committee.event.title}`,
-          description: `Committee proposal submitted by ${req.user.name} for review.`,
+          title: `${committee.name} Workplan — ${committee.event.title}`,
+          description: `Committee workplan submitted by ${req.user.name} for review.`,
           requestedBy: req.user.name,
           priority: "normal",
           status: "pending",
@@ -234,7 +234,7 @@ router.post("/committee/:id/submit", async (req, res) => {
             create: {
               action: "submitted",
               performedBy: req.user.name,
-              comment: "Committee proposal submitted for director review.",
+              comment: "Committee workplan submitted for director review.",
             },
           },
         },
@@ -245,7 +245,7 @@ router.post("/committee/:id/submit", async (req, res) => {
     Promise.all([
       logActivity({
         action: "approval_submitted",
-        description: `${req.user.name} submitted ${committee.name} proposal for approval`,
+        description: `${req.user.name} submitted ${committee.name} workplan for approval`,
         eventId: committee.eventId,
         performedBy: req.user.name,
       }),

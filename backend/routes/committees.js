@@ -213,7 +213,7 @@ router.post("/:id/set-deadline", requireAuth, async (req, res) => {
     await notifyCommitteeMembers({
       committeeId: committee.id,
       type: "deadline_set",
-      title: "Due date set for your committee",
+      title: "Work plan submission reminder",
       message: `Workplan for ${committee.name} is due by ${deadline.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}. Make sure to submit before the due date.`,
       link: `/portal/committee/${committee.id}`,
       metadata: { committeeId: committee.id, deadline: proposalDeadline },

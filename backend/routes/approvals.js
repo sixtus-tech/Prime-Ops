@@ -291,7 +291,7 @@ router.post("/:id/action", requireAuth, async (req, res) => {
               await logActivity({
                 eventId: existing.eventId,
                 action: "sub_milestones_generated",
-                description: `Generated ${subs.length} sub-milestones for ${committee?.name || "committee"} upon proposal approval`,
+                description: `Generated ${subs.length} sub-milestones for ${committee?.name || "committee"} upon workplan approval`,
                 performedBy,
               });
             }
@@ -347,7 +347,7 @@ router.post("/:id/action", requireAuth, async (req, res) => {
       await notifyCommitteeMembers({
         committeeId: existing.committeeId,
         type: action === "commented" ? "proposal_comment" : `proposal_${action}`,
-        title: `Proposal ${actionLabels[action]}`,
+        title: `Workplan ${actionLabels[action]}`,
         message: kcMessage,
         link: `/portal/proposals/${existing.proposalId || ""}`,
         metadata: { approvalId: existing.id, proposalId: existing.proposalId, action, pdfLink },

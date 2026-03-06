@@ -174,7 +174,7 @@ router.post("/from-proposal", requireAuth, async (req, res) => {
 
     logActivity({
       action: "event_created",
-      description: `Event "${event.title}" created from generated proposal with ${event.committees?.length || 0} committees`,
+      description: `Event "${event.title}" created from generated workplan with ${event.committees?.length || 0} committees`,
       eventId: event.id,
     }).catch(() => {});
 
@@ -342,7 +342,7 @@ router.post("/:id/set-deadlines", requireAuth, async (req, res) => {
       notifyCommitteeMembers({
         committeeId: d.committeeId,
         type: "deadline_set",
-        title: "Due date set for your committee",
+        title: "Work plan submission reminder",
         message: `Your committee workplan is due by ${deadline.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}.`,
         link: `/portal/committee/${d.committeeId}`,
         metadata: { committeeId: d.committeeId, deadline: d.proposalDeadline },

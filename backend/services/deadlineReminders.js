@@ -69,19 +69,19 @@ async function checkDeadlineReminders() {
       // Build reminder message
       const messages = {
         "7_day_reminder": {
-          title: `7 days until due date — ${committee.name}`,
+          title: `Work plan due in 7 days — ${committee.name}`,
           message: `Your workplan for ${committee.name} is due in 7 days on ${formattedDate}. Start working on it if you haven't already!`,
         },
         "3_day_reminder": {
-          title: `3 days left — ${committee.name}`,
+          title: `Work plan due in 3 days — ${committee.name}`,
           message: `Only 3 days until the ${committee.name} workplan is due! Due date: ${formattedDate}. Please finalize and submit your workplan.`,
         },
         "1_day_reminder": {
-          title: `Due tomorrow — ${committee.name}`,
+          title: `Work plan due tomorrow — ${committee.name}`,
           message: `The ${committee.name} workplan is due TOMORROW (${formattedDate}). Submit your workplan today to stay on track.`,
         },
         "due_today": {
-          title: `Due TODAY — ${committee.name}`,
+          title: `Work plan due TODAY — ${committee.name}`,
           message: `The ${committee.name} workplan is due TODAY. Please submit immediately.`,
         },
         "overdue": {
@@ -118,7 +118,7 @@ async function checkDeadlineReminders() {
         await notifyEventDirector({
           eventId: committee.event?.id,
           type: "committee_overdue",
-          title: `Committee overdue: ${committee.name}`,
+          title: `Work plan overdue: ${committee.name}`,
           message: `${committee.name} (${committee.event?.title}) workplan is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""} overdue. Chair(s): ${chairNames}.`,
           link: `/events/${committee.event?.id}`,
           metadata: { committeeId: committee.id, eventId: committee.event?.id, daysOverdue: Math.abs(daysUntil) },
