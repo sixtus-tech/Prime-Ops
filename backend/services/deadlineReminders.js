@@ -64,27 +64,28 @@ async function checkDeadlineReminders() {
 
       const formattedDate = dueDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
       const shortDate = dueDate.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+      const eventTitle = committee.event?.title || null;
 
       // Build reminder message
       const messages = {
         "7_day_reminder": {
-          title: `📅 7 days until due date — ${committee.name}`,
-          message: `Your workplan for ${committee.name} (${committee.event?.title}) is due in 7 days on ${formattedDate}. Start working on it if you haven't already!`,
+          title: `7 days until due date — ${committee.name}`,
+          message: `Your workplan for ${committee.name} is due in 7 days on ${formattedDate}. Start working on it if you haven't already!`,
         },
         "3_day_reminder": {
-          title: `⚠️ 3 days left — ${committee.name}`,
+          title: `3 days left — ${committee.name}`,
           message: `Only 3 days until the ${committee.name} workplan is due! Due date: ${formattedDate}. Please finalize and submit your workplan.`,
         },
         "1_day_reminder": {
-          title: `🚨 Due tomorrow — ${committee.name}`,
+          title: `Due tomorrow — ${committee.name}`,
           message: `The ${committee.name} workplan is due TOMORROW (${formattedDate}). Submit your workplan today to stay on track.`,
         },
         "due_today": {
-          title: `🔴 Due TODAY — ${committee.name}`,
+          title: `Due TODAY — ${committee.name}`,
           message: `The ${committee.name} workplan is due TODAY. Please submit immediately.`,
         },
         "overdue": {
-          title: `❗ OVERDUE (${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""}) — ${committee.name}`,
+          title: `OVERDUE (${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""}) — ${committee.name}`,
           message: `The ${committee.name} workplan was due ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""} ago on ${shortDate}. Please submit as soon as possible.`,
         },
       };
@@ -104,6 +105,7 @@ async function checkDeadlineReminders() {
         link: `/portal/committee/${committee.id}`,
         metadata: { committeeId: committee.id, reminderType, daysUntil },
         senderUserId,
+        eventTitle,
       });
 
       // Notify ONLY the director who owns this event (not all directors)
@@ -121,10 +123,11 @@ async function checkDeadlineReminders() {
           link: `/events/${committee.event?.id}`,
           metadata: { committeeId: committee.id, eventId: committee.event?.id, daysOverdue: Math.abs(daysUntil) },
           senderUserId,
+          eventTitle,
         });
       }
 
-      console.log(`[Reminders] Sent ${reminderType} for ${committee.name} (event: ${committee.event?.title})`);
+      console.log(`[Reminders] Sent ${reminderType} for ${committee.name} (event: ${eventTitle})`);
     }
   } catch (err) {
     console.error("[Reminders] Error checking due dates:", err);

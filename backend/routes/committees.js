@@ -390,7 +390,7 @@ router.post("/:id/members", requireAuth, async (req, res) => {
     const memberKcId = kcId || member.kcId;
     console.log("[Events Add Member] memberKcId:", memberKcId, "| kcId from body:", kcId, "| member.kcId:", member.kcId);
       const kcMessage = [
-        `📋 Prime Ops — *Appointment as ${roleLabel} of the ${committee.name}*`,
+        `📋 ${committee.event?.title?.toUpperCase() || "PRIME OPS"} — *Appointment as ${roleLabel} of the ${committee.name}*`,
         ``,
         `Dear Esteemed ${name.trim()},`,
         ``,

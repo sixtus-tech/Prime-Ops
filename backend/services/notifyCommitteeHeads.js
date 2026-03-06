@@ -9,8 +9,17 @@ function cleanForKc(text) {
 /**
  * Notify all heads of a specific committee (in-app + KingsChat)
  */
-async function notifyCommitteeHeads({ committeeId, type, title, message, link, metadata, senderUserId }) {
+async function notifyCommitteeHeads({ committeeId, type, title, message, link, metadata, senderUserId, eventTitle }) {
   try {
+    // Look up event title if not provided
+    if (!eventTitle) {
+      const committee = await prisma.committee.findUnique({
+        where: { id: committeeId },
+        select: { event: { select: { title: true } } },
+      });
+      eventTitle = committee?.event?.title || null;
+    }
+
     const heads = await prisma.member.findMany({
       where: {
         committeeId,
@@ -33,12 +42,15 @@ async function notifyCommitteeHeads({ committeeId, type, title, message, link, m
       })),
     });
 
-    // KingsChat messages (fire-and-forget)
-    const kcMsg = `📋 Prime Ops\n\n${cleanForKc(title)}\n${cleanForKc(message)}`;
+    // KingsChat messages
+    const header = eventTitle
+      ? `📋 ${eventTitle.toUpperCase()} — ${cleanForKc(title)}`
+      : `📋 ${cleanForKc(title)}`;
+    const kcMsg = `${header}\n\n${cleanForKc(message)}`;
+
     for (const h of heads) {
       sendKcNotification(h.userId, kcMsg, senderUserId).catch(() => {});
     }
-
     return heads.length;
   } catch (err) {
     console.error("Notify committee heads error:", err.message);

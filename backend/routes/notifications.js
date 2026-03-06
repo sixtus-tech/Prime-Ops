@@ -77,7 +77,7 @@ router.post("/kc-send", async (req, res) => {
       return res.status(400).json({ error: "userId and message are required." });
     }
 
-    const sent = await sendKcNotification(userId, `📋 Prime Ops\n\n${message}`, req.user?.id);
+    const sent = await sendKcNotification(userId, `📋 ${message}`, req.user?.id);
     res.json({ sent, message: sent ? "Message sent to KingsChat" : "Could not send — user may not have KC linked or tokens expired" });
   } catch (err) {
     console.error("KC send error:", err);
