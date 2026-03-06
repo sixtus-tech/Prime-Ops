@@ -20,10 +20,10 @@ export default function BroadcastAlert({ eventId, eventTitle, committees = [], o
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const templates = [
-    { label: "Proposal Reminder", subject: "Proposal Submission Reminder", message: `This is a reminder that your committee proposal for ${eventTitle} is due soon. Please submit your proposal in the Committee Portal as soon as possible.` },
-    { label: "Status Update Request", subject: "Status Update Needed", message: `Please submit a status update for your committee's progress on ${eventTitle}. Go to your Committee Portal → Updates tab to share your progress.` },
-    { label: "Urgent Meeting", subject: "Urgent: Committee Heads Meeting", message: `All committee heads are requested to attend an urgent planning meeting for ${eventTitle}. Details to follow.` },
-    { label: "Budget Due", subject: "Budget Submission Due", message: `Please submit your committee's budget breakdown for ${eventTitle} at your earliest convenience. This is needed to finalize the overall event budget.` },
+    { label: "Work plan Reminder", subject: "Work plan Submission Reminder", message: `This is a reminder that your committee work plan for ${eventTitle} is due soon. Please submit your work plan in the Committee Portal as soon as possible.` },
+    { label: "Status Update", subject: "Status Update Required", message: `Kindly submit a status update on your committee's progress for ${eventTitle}. Go to your Committee Portal → Updates tab to share your progress. Thank you.` },
+    { label: "Urgent Meeting", subject: "Urgent: Team Leads Meeting", message: `All team leads are required to attend an urgent planning meeting for ${eventTitle}. Details will be communicated shortly. Please confirm your availability. Thank you.` },
+    { label: "Budget Due", subject: "Budget Submission Required", message: `Kindly submit your committee's budget breakdown for ${eventTitle} at your earliest convenience. This is needed to finalize the overall project budget. Thank you.` },
   ];
 
   function toggleCommittee(id) {
